@@ -14,6 +14,7 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { Task } from '@/types';
 import KanbanColumn from './KanbanColumn';
 import TaskCard from './TaskCard';
@@ -27,6 +28,7 @@ interface KanbanBoardProps {
 
 const KanbanBoard: React.FC<KanbanBoardProps> = ({ onAddTask, onTaskClick }) => {
   const { state, dispatch } = useApp();
+  const { t } = useLanguage();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
@@ -151,7 +153,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ onAddTask, onTaskClick }) => 
           {isAddingColumn ? (
             <div className="bg-column-bg rounded-xl p-3 space-y-2">
               <Input
-                placeholder="Column title..."
+                placeholder={t.columnTitle}
                 value={newColumnTitle}
                 onChange={(e) => setNewColumnTitle(e.target.value)}
                 autoFocus
@@ -162,10 +164,10 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ onAddTask, onTaskClick }) => 
               />
               <div className="flex gap-2">
                 <Button size="sm" onClick={handleAddColumn}>
-                  Add
+                  {t.add}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setIsAddingColumn(false)}>
-                  Cancel
+                  {t.cancel}
                 </Button>
               </div>
             </div>
@@ -176,7 +178,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ onAddTask, onTaskClick }) => 
               onClick={() => setIsAddingColumn(true)}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add column
+              {t.addColumn}
             </Button>
           )}
         </div>

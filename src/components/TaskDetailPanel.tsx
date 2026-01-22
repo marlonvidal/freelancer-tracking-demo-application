@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, DollarSign, Calendar, Tag, User, AlertCircle } from 'lucide-react';
+import { X, Clock, DollarSign, Calendar, User, AlertCircle } from 'lucide-react';
 import { Task, Priority } from '@/types';
 import { useApp } from '@/context/AppContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { formatTimeCompact } from '@/hooks/useTimer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,7 @@ interface TaskDetailPanelProps {
 
 const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
   const { state, dispatch, getClient, getTaskRate } = useApp();
+  const { t } = useLanguage();
   const [localTask, setLocalTask] = useState<Task | null>(null);
 
   useEffect(() => {
@@ -68,7 +70,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
           >
             {/* Header */}
             <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between">
-              <h2 className="font-semibold">Task Details</h2>
+              <h2 className="font-semibold">{t.taskDetails}</h2>
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="h-4 w-4" />
               </Button>
@@ -77,7 +79,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
             <div className="p-4 space-y-6">
               {/* Title */}
               <div>
-                <Label className="text-xs text-muted-foreground">Title</Label>
+                <Label className="text-xs text-muted-foreground">{t.title}</Label>
                 <Input
                   value={localTask.title}
                   onChange={(e) => handleUpdate({ title: e.target.value })}
@@ -87,11 +89,11 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
 
               {/* Description */}
               <div>
-                <Label className="text-xs text-muted-foreground">Description</Label>
+                <Label className="text-xs text-muted-foreground">{t.description}</Label>
                 <Textarea
                   value={localTask.description}
                   onChange={(e) => handleUpdate({ description: e.target.value })}
-                  placeholder="Add a description..."
+                  placeholder={t.addDescription}
                   className="mt-1 min-h-24 resize-none"
                 />
               </div>
@@ -100,17 +102,17 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
               <div>
                 <Label className="text-xs text-muted-foreground flex items-center gap-1">
                   <User className="h-3 w-3" />
-                  Client
+                  {t.client}
                 </Label>
                 <Select
                   value={localTask.clientId || 'none'}
                   onValueChange={(value) => handleUpdate({ clientId: value === 'none' ? null : value })}
                 >
                   <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select client" />
+                    <SelectValue placeholder={t.selectClient} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No client</SelectItem>
+                    <SelectItem value="none">{t.noClient}</SelectItem>
                     {state.clients.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         <span className="flex items-center gap-2">
@@ -130,7 +132,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
               <div>
                 <Label className="text-xs text-muted-foreground flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
-                  Priority
+                  {t.priority}
                 </Label>
                 <Select
                   value={localTask.priority}
@@ -143,19 +145,19 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                     <SelectItem value="high">
                       <span className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-priority-high" />
-                        High
+                        {t.high}
                       </span>
                     </SelectItem>
                     <SelectItem value="medium">
                       <span className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-priority-medium" />
-                        Medium
+                        {t.medium}
                       </span>
                     </SelectItem>
                     <SelectItem value="low">
                       <span className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-priority-low" />
-                        Low
+                        {t.low}
                       </span>
                     </SelectItem>
                   </SelectContent>
@@ -166,7 +168,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
               <div>
                 <Label className="text-xs text-muted-foreground flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  Due Date
+                  {t.dueDate}
                 </Label>
                 <Input
                   type="date"
@@ -183,7 +185,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-revenue" />
-                    Billable
+                    {t.billable}
                   </Label>
                   <Switch
                     checked={localTask.isBillable}
@@ -195,7 +197,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                   <>
                     <div>
                       <Label className="text-xs text-muted-foreground">
-                        Hourly Rate (override)
+                        {t.hourlyRate}
                       </Label>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-muted-foreground">$</span>
@@ -205,7 +207,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                           onChange={(e) => handleUpdate({
                             hourlyRate: e.target.value ? parseFloat(e.target.value) : null
                           })}
-                          placeholder={client ? `${client.hourlyRate} (from client)` : 'Set rate'}
+                          placeholder={client ? `${client.hourlyRate} (${t.clientRate})` : t.hourlyRate}
                           className="flex-1"
                         />
                         <span className="text-muted-foreground">/hr</span>
@@ -214,11 +216,11 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
 
                     <div className="pt-2 border-t border-border">
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Current rate:</span>
+                        <span className="text-muted-foreground">{t.hourlyRate}:</span>
                         <span className="font-medium">${rate}/hr</span>
                       </div>
                       <div className="flex justify-between text-sm mt-1">
-                        <span className="text-muted-foreground">Revenue earned:</span>
+                        <span className="text-muted-foreground">{t.revenue}:</span>
                         <span className="font-semibold text-revenue">${revenue.toFixed(2)}</span>
                       </div>
                     </div>
@@ -230,11 +232,11 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
               <div className="bg-muted/50 rounded-lg p-4 space-y-4">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  <Label>Time Tracking</Label>
+                  <Label>{t.timeTracking}</Label>
                 </div>
 
                 <div>
-                  <Label className="text-xs text-muted-foreground">Time Estimate</Label>
+                  <Label className="text-xs text-muted-foreground">{t.timeEstimate}</Label>
                   <div className="flex items-center gap-2 mt-1">
                     <Input
                       type="number"
@@ -246,13 +248,13 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                       placeholder="0"
                       className="w-20"
                     />
-                    <span className="text-muted-foreground text-sm">hours</span>
+                    <span className="text-muted-foreground text-sm">{t.hours}</span>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-border">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Time spent:</span>
+                    <span className="text-muted-foreground">{t.totalTime}:</span>
                     <span className="font-medium font-mono">{formatTimeCompact(localTask.timeSpent)}</span>
                   </div>
                   {localTask.timeEstimate && (
@@ -288,7 +290,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                   onClose();
                 }}
               >
-                Delete Task
+                {t.delete}
               </Button>
             </div>
           </motion.div>

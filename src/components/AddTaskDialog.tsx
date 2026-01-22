@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { X, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Priority } from '@/types';
 import { useApp } from '@/context/AppContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,6 +34,7 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
   defaultColumnId,
 }) => {
   const { state, dispatch } = useApp();
+  const { t } = useLanguage();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [clientId, setClientId] = useState<string>('none');
@@ -87,30 +88,30 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
+          <DialogTitle>{t.createNewTask}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div>
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">{t.title}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="What needs to be done?"
+              placeholder={t.enterTaskTitle}
               autoFocus
             />
           </div>
 
           {/* Description */}
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t.description}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add more details..."
+              placeholder={t.addDescription}
               className="resize-none"
               rows={3}
             />
@@ -135,13 +136,13 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
 
           {/* Client */}
           <div>
-            <Label>Client</Label>
+            <Label>{t.client}</Label>
             <Select value={clientId} onValueChange={setClientId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select client" />
+                <SelectValue placeholder={t.selectClient} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">No client</SelectItem>
+                <SelectItem value="none">{t.noClient}</SelectItem>
                 {state.clients.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     <span className="flex items-center gap-2">
@@ -159,7 +160,7 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
 
           {/* Priority */}
           <div>
-            <Label>Priority</Label>
+            <Label>{t.priority}</Label>
             <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
               <SelectTrigger>
                 <SelectValue />
@@ -168,19 +169,19 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
                 <SelectItem value="high">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-priority-high" />
-                    High
+                    {t.high}
                   </span>
                 </SelectItem>
                 <SelectItem value="medium">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-priority-medium" />
-                    Medium
+                    {t.medium}
                   </span>
                 </SelectItem>
                 <SelectItem value="low">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-priority-low" />
-                    Low
+                    {t.low}
                   </span>
                 </SelectItem>
               </SelectContent>
@@ -189,7 +190,7 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
 
           {/* Billable */}
           <div className="flex items-center justify-between py-2">
-            <Label htmlFor="billable">Billable</Label>
+            <Label htmlFor="billable">{t.billable}</Label>
             <Switch
               id="billable"
               checked={isBillable}
@@ -200,10 +201,10 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
           {isBillable && (
             <div>
               <Label>
-                Hourly Rate Override
+                {t.hourlyRate}
                 {selectedClient && (
                   <span className="text-muted-foreground font-normal ml-1">
-                    (Client: ${selectedClient.hourlyRate}/hr)
+                    ({t.clientRate}: ${selectedClient.hourlyRate}/hr)
                   </span>
                 )}
               </Label>
@@ -213,7 +214,7 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
                   type="number"
                   value={hourlyRate}
                   onChange={(e) => setHourlyRate(e.target.value)}
-                  placeholder="Use client rate"
+                  placeholder={t.clientRate}
                 />
                 <span className="text-muted-foreground">/hr</span>
               </div>
@@ -222,7 +223,7 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
 
           {/* Time Estimate */}
           <div>
-            <Label>Time Estimate (hours)</Label>
+            <Label>{t.timeEstimate} ({t.hours})</Label>
             <Input
               type="number"
               value={timeEstimate}
@@ -235,11 +236,11 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
           {/* Actions */}
           <div className="flex gap-2 pt-4">
             <Button type="button" variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t.cancel}
             </Button>
             <Button type="submit" className="flex-1" disabled={!title.trim()}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Task
+              {t.createTask}
             </Button>
           </div>
         </form>

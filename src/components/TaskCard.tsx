@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Play, Square, DollarSign, Clock, Calendar, MoreHorizontal, Trash2 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Task } from '@/types';
@@ -24,6 +24,7 @@ interface TaskCardProps {
 const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
   const { getClient, getTaskRate, getTaskRevenue, dispatch } = useApp();
   const { toggleTimer, isTimerRunning, getElapsedForTask } = useTimer();
+  const { t } = useLanguage();
 
   const {
     attributes,
@@ -69,8 +70,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    if (date.toDateString() === today.toDateString()) return 'Today';
-    if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+    if (date.toDateString() === today.toDateString()) return t.today;
+    if (date.toDateString() === tomorrow.toDateString()) return t.tomorrow;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
@@ -78,14 +79,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
   const isOverdue = task.dueDate && task.dueDate < Date.now();
 
   return (
-    <motion.div
+    <div
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
       className={cn(
         'group relative bg-task-card rounded-lg border border-border p-3 cursor-grab active:cursor-grabbing',
         'hover:shadow-card-hover hover:border-border/80 transition-all duration-200',
@@ -162,7 +160,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             ) : (
               <>
                 <Play className="h-3 w-3 fill-current" />
-                <span className="font-mono">{totalTime > 0 ? formatTimeCompact(totalTime) : 'Start'}</span>
+                <span className="font-mono">{totalTime > 0 ? formatTimeCompact(totalTime) : t.start}</span>
               </>
             )}
           </button>
@@ -185,7 +183,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             </span>
           ) : (
             <span className="non-billable-badge text-[10px]">
-              Non-billable
+              {t.nonBillable}
             </span>
           )}
         </div>
@@ -198,10 +196,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
           isOverdue ? 'text-destructive' : isDueSoon ? 'text-timer' : 'text-muted-foreground'
         )}>
           <Calendar className="h-3 w-3" />
-          {isOverdue ? 'Overdue' : formatDueDate(task.dueDate)}
+          {isOverdue ? t.overdue : formatDueDate(task.dueDate)}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 
