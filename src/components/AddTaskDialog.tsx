@@ -1,0 +1,251 @@
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { X, Plus } from 'lucide-react';
+import { Priority } from '@/types';
+import { useApp } from '@/context/AppContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+interface AddTaskDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  defaultColumnId: string | null;
+}
+
+const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
+  open,
+  onOpenChange,
+  defaultColumnId,
+}) => {
+  const { state, dispatch } = useApp();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [clientId, setClientId] = useState<string>('none');
+  const [priority, setPriority] = useState<Priority>('medium');
+  const [isBillable, setIsBillable] = useState(true);
+  const [hourlyRate, setHourlyRate] = useState<string>('');
+  const [timeEstimate, setTimeEstimate] = useState<string>('');
+  const [columnId, setColumnId] = useState<string>(defaultColumnId || state.columns[0]?.id || '');
+
+  React.useEffect(() => {
+    if (defaultColumnId) {
+      setColumnId(defaultColumnId);
+    }
+  }, [defaultColumnId]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+
+    dispatch({
+      type: 'ADD_TASK',
+      payload: {
+        title: title.trim(),
+        description: description.trim(),
+        columnId,
+        clientId: clientId === 'none' ? null : clientId,
+        priority,
+        isBillable,
+        hourlyRate: hourlyRate ? parseFloat(hourlyRate) : null,
+        timeEstimate: timeEstimate ? parseFloat(timeEstimate) * 3600 : null,
+        timeSpent: 0,
+        dueDate: null,
+        tags: [],
+      },
+    });
+
+    // Reset form
+    setTitle('');
+    setDescription('');
+    setClientId('none');
+    setPriority('medium');
+    setIsBillable(true);
+    setHourlyRate('');
+    setTimeEstimate('');
+    onOpenChange(false);
+  };
+
+  const selectedClient = state.clients.find(c => c.id === clientId);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add New Task</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Title */}
+          <div>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="What needs to be done?"
+              autoFocus
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add more details..."
+              className="resize-none"
+              rows={3}
+            />
+          </div>
+
+          {/* Column */}
+          <div>
+            <Label>Column</Label>
+            <Select value={columnId} onValueChange={setColumnId}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {state.columns.map((col) => (
+                  <SelectItem key={col.id} value={col.id}>
+                    {col.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Client */}
+          <div>
+            <Label>Client</Label>
+            <Select value={clientId} onValueChange={setClientId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select client" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No client</SelectItem>
+                {state.clients.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: c.color }}
+                      />
+                      {c.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Priority */}
+          <div>
+            <Label>Priority</Label>
+            <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="high">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-priority-high" />
+                    High
+                  </span>
+                </SelectItem>
+                <SelectItem value="medium">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-priority-medium" />
+                    Medium
+                  </span>
+                </SelectItem>
+                <SelectItem value="low">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-priority-low" />
+                    Low
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Billable */}
+          <div className="flex items-center justify-between py-2">
+            <Label htmlFor="billable">Billable</Label>
+            <Switch
+              id="billable"
+              checked={isBillable}
+              onCheckedChange={setIsBillable}
+            />
+          </div>
+
+          {isBillable && (
+            <div>
+              <Label>
+                Hourly Rate Override
+                {selectedClient && (
+                  <span className="text-muted-foreground font-normal ml-1">
+                    (Client: ${selectedClient.hourlyRate}/hr)
+                  </span>
+                )}
+              </Label>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-muted-foreground">$</span>
+                <Input
+                  type="number"
+                  value={hourlyRate}
+                  onChange={(e) => setHourlyRate(e.target.value)}
+                  placeholder="Use client rate"
+                />
+                <span className="text-muted-foreground">/hr</span>
+              </div>
+            </div>
+          )}
+
+          {/* Time Estimate */}
+          <div>
+            <Label>Time Estimate (hours)</Label>
+            <Input
+              type="number"
+              value={timeEstimate}
+              onChange={(e) => setTimeEstimate(e.target.value)}
+              placeholder="e.g., 4"
+              step="0.5"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-4">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1" disabled={!title.trim()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Task
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default AddTaskDialog;
