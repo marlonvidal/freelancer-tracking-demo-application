@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Plus, MoreHorizontal, Trash2, Edit2, Check, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Column, Task } from '@/types';
 import { useApp } from '@/context/AppContext';
+import { useLanguage } from '@/context/LanguageContext';
 import TaskCard from './TaskCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
   onTaskClick,
 }) => {
   const { dispatch, state } = useApp();
+  const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(column.title);
 
@@ -105,12 +106,12 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setIsEditing(true)}>
                     <Edit2 className="h-4 w-4 mr-2" />
-                    Rename
+                    {t.rename}
                   </DropdownMenuItem>
                   {state.columns.length > 1 && (
                     <DropdownMenuItem onClick={handleDeleteColumn} className="text-destructive">
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
+                      {t.delete}
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -123,23 +124,21 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
       {/* Tasks */}
       <div className="flex-1 overflow-y-auto p-2 space-y-2 column-scroll">
         <SortableContext items={sortedTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-          <AnimatePresence>
-            {sortedTasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onClick={() => onTaskClick(task)}
-              />
-            ))}
-          </AnimatePresence>
+          {sortedTasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onClick={() => onTaskClick(task)}
+            />
+          ))}
         </SortableContext>
 
         {sortedTasks.length === 0 && (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <p className="text-sm text-muted-foreground mb-2">No tasks yet</p>
+            <p className="text-sm text-muted-foreground mb-2">{t.noTasksYet}</p>
             <Button variant="outline" size="sm" onClick={onAddTask}>
               <Plus className="h-4 w-4 mr-1" />
-              Add task
+              {t.addTask}
             </Button>
           </div>
         )}
