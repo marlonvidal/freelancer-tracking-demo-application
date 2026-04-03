@@ -1,0 +1,18 @@
+{
+  "tdd_phase": "RED",
+  "story_id": "1-1",
+  "total_tests": 3,
+  "api_tests": 0,
+  "e2e_tests": 3,
+  "all_tests_skipped": true,
+  "expected_to_fail": true,
+  "fixtures_created": 0,
+  "subagent_execution": "SEQUENTIAL (no API scope; E2E only)",
+  "performance_gain": "baseline",
+  "acceptance_criteria_covered": [
+    "AC1: /earnings renders EarningsDashboard; heading and document.title reflect earnings",
+    "AC2: Browser back from /earnings; freelancer-kanban-data not cleared or corrupted",
+    "AC3: Initial navigation to /earnings under 1s (NFR-P5)"
+  ],
+  "api_scope": "none — Story 1.1 is client-only SPA routing; no API tests generated"
+}

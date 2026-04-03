@@ -74,6 +74,11 @@ interface Translations {
   language: string;
   english: string;
   portuguese: string;
+
+  // Earnings dashboard
+  earningsDashboardHeading: string;
+  earningsDashboardPlaceholder: string;
+  earningsDashboardDocumentTitle: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -134,6 +139,9 @@ export const translations: Record<Language, Translations> = {
     language: 'Language',
     english: 'English',
     portuguese: 'Portuguese',
+    earningsDashboardHeading: 'Earnings dashboard',
+    earningsDashboardPlaceholder: 'Charts and metrics will appear here in a later release.',
+    earningsDashboardDocumentTitle: 'Earnings — FreelanceFlow',
   },
   pt: {
     totalRevenue: 'Receita Total',
@@ -192,6 +200,9 @@ export const translations: Record<Language, Translations> = {
     language: 'Idioma',
     english: 'Inglês',
     portuguese: 'Português',
+    earningsDashboardHeading: 'Painel de ganhos',
+    earningsDashboardPlaceholder: 'Gráficos e métricas aparecerão aqui em uma versão futura.',
+    earningsDashboardDocumentTitle: 'Ganhos — FreelanceFlow',
   },
 };
 
