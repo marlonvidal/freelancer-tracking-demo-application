@@ -65,6 +65,11 @@ interface Translations {
   saveClient: string;
   clientColor: string;
 
+  // Tags
+  tags: string;
+  addTag: string;
+  pressEnterToAddTag: string;
+
   // Settings
   language: string;
   english: string;
@@ -123,6 +128,9 @@ const translations: Record<Language, Translations> = {
     newClient: 'New Client',
     saveClient: 'Save client',
     clientColor: 'Color',
+    tags: 'Tags',
+    addTag: 'Add tag',
+    pressEnterToAddTag: 'Press Enter or comma to add',
     language: 'Language',
     english: 'English',
     portuguese: 'Portuguese',
@@ -178,6 +186,9 @@ const translations: Record<Language, Translations> = {
     newClient: 'Novo Cliente',
     saveClient: 'Salvar cliente',
     clientColor: 'Cor',
+    tags: 'Tags',
+    addTag: 'Adicionar tag',
+    pressEnterToAddTag: 'Pressione Enter ou vírgula para adicionar',
     language: 'Idioma',
     english: 'Inglês',
     portuguese: 'Português',

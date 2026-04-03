@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { Priority } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -45,6 +46,8 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
   const [timeEstimate, setTimeEstimate] = useState<string>('');
   const [columnId, setColumnId] = useState<string>(defaultColumnId || state.columns[0]?.id || '');
   const [showNewClientForm, setShowNewClientForm] = useState(false);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
 
   React.useEffect(() => {
     if (defaultColumnId) setColumnId(defaultColumnId);
@@ -57,6 +60,11 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
+
+    const pendingTag = tagInput.trim().replace(/,$/, '').trim();
+    const finalTags = pendingTag && !tags.includes(pendingTag)
+      ? [...tags, pendingTag]
+      : tags;
 
     dispatch({
       type: 'ADD_TASK',
@@ -71,7 +79,7 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
         timeEstimate: timeEstimate ? parseFloat(timeEstimate) * 3600 : null,
         timeSpent: 0,
         dueDate: null,
-        tags: [],
+        tags: finalTags,
       },
     });
 
@@ -82,12 +90,33 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
     setIsBillable(true);
     setHourlyRate('');
     setTimeEstimate('');
+    setTags([]);
+    setTagInput('');
     onOpenChange(false);
   };
 
   const handleClientCreated = (newClientId: string) => {
     setClientId(newClientId);
     setShowNewClientForm(false);
+  };
+
+  const addTag = (value: string) => {
+    const trimmed = value.trim().replace(/,$/, '').trim();
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags(prev => [...prev, trimmed]);
+    }
+    setTagInput('');
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag(tagInput);
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    setTags(prev => prev.filter(t => t !== tag));
   };
 
   const selectedClient = state.clients.find(c => c.id === clientId);
@@ -260,6 +289,32 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
               placeholder="e.g., 4"
               step="0.5"
             />
+          </div>
+
+          {/* Tags */}
+          <div>
+            <Label>{t.tags}</Label>
+            <div className="mt-1 flex flex-wrap gap-1 p-2 border border-input rounded-md min-h-9 items-center">
+              {tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="flex items-center gap-1 text-xs">
+                  <span className="max-w-[120px] truncate">{tag}</span>
+                  <X
+                    className="h-3 w-3 cursor-pointer shrink-0"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => removeTag(tag)}
+                  />
+                </Badge>
+              ))}
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                onBlur={() => addTag(tagInput)}
+                placeholder={tags.length === 0 ? t.pressEnterToAddTag : t.addTag}
+                className="flex-1 min-w-[120px] bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              />
+            </div>
           </div>
 
           {/* Actions */}

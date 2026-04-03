@@ -189,6 +189,21 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
         </div>
       </div>
 
+      {/* Tags */}
+      {task.tags && task.tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {task.tags.map((tag) => (
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="text-[10px] px-1.5 py-0 max-w-[120px] truncate"
+            >
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      )}
+
       {/* Due date */}
       {task.dueDate && (
         <div className={cn(

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, DollarSign, Calendar, User, AlertCircle } from 'lucide-react';
+import { X, Clock, DollarSign, Calendar, User, AlertCircle, Tag } from 'lucide-react';
 import { Task, Priority } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { formatTimeCompact } from '@/hooks/useTimer';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -30,6 +31,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
   const { t } = useLanguage();
   const [localTask, setLocalTask] = useState<Task | null>(null);
   const [showNewClientForm, setShowNewClientForm] = useState(false);
+  const [tagInput, setTagInput] = useState('');
 
   useEffect(() => {
     setLocalTask(task);
@@ -48,6 +50,27 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
   const handleClientCreated = (newClientId: string) => {
     handleUpdate({ clientId: newClientId });
     setShowNewClientForm(false);
+  };
+
+  const addTag = (value: string) => {
+    const trimmed = value.trim().replace(/,$/, '').trim();
+    const currentTags = localTask.tags ?? [];
+    if (trimmed && !currentTags.includes(trimmed)) {
+      const updated = [...currentTags, trimmed];
+      handleUpdate({ tags: updated });
+    }
+    setTagInput('');
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag(tagInput);
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    handleUpdate({ tags: (localTask.tags ?? []).filter(t => t !== tag) });
   };
 
   const client = getClient(localTask.clientId);
@@ -203,6 +226,35 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                   })}
                   className="mt-1"
                 />
+              </div>
+
+              {/* Tags */}
+              <div>
+                <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Tag className="h-3 w-3" />
+                  {t.tags}
+                </Label>
+                <div className="mt-1 flex flex-wrap gap-1 p-2 border border-input rounded-md min-h-9 items-center">
+                  {(localTask.tags ?? []).map((tag) => (
+                    <Badge key={tag} variant="secondary" className="flex items-center gap-1 text-xs">
+                      <span className="max-w-[120px] truncate">{tag}</span>
+                      <X
+                        className="h-3 w-3 cursor-pointer shrink-0"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => removeTag(tag)}
+                      />
+                    </Badge>
+                  ))}
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleTagKeyDown}
+                    onBlur={() => addTag(tagInput)}
+                    placeholder={(localTask.tags ?? []).length === 0 ? t.pressEnterToAddTag : t.addTag}
+                    className="flex-1 min-w-[120px] bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
               </div>
 
               {/* Billable & Rate */}
