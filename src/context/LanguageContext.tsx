@@ -83,6 +83,18 @@ interface Translations {
   earningsDashboardHeading: string;
   earningsDashboardPlaceholder: string;
   earningsDashboardDocumentTitle: string;
+  earningsDateRangeLabel: string;
+  earningsBillableFilterLabel: string;
+  earningsChartViewLabel: string;
+  earningsDateRangeLast30Days: string;
+  earningsDateRangeQuarter: string;
+  earningsDateRangeYear: string;
+  earningsDateRangeAll: string;
+  earningsFilterAll: string;
+  earningsChartCustomer: string;
+  earningsChartProject: string;
+  earningsChartTag: string;
+  earningsClearAppData: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -148,6 +160,18 @@ export const translations: Record<Language, Translations> = {
     earningsDashboardHeading: 'Earnings dashboard',
     earningsDashboardPlaceholder: 'Charts and metrics will appear here in a later release.',
     earningsDashboardDocumentTitle: 'Earnings — FreelanceFlow',
+    earningsDateRangeLabel: 'Date range',
+    earningsBillableFilterLabel: 'Billable filter',
+    earningsChartViewLabel: 'Chart',
+    earningsDateRangeLast30Days: 'Last 30 days',
+    earningsDateRangeQuarter: 'Quarter',
+    earningsDateRangeYear: 'Year',
+    earningsDateRangeAll: 'All time',
+    earningsFilterAll: 'All',
+    earningsChartCustomer: 'Customer',
+    earningsChartProject: 'Project',
+    earningsChartTag: 'Tag',
+    earningsClearAppData: 'Clear app data',
   },
   pt: {
     totalRevenue: 'Receita Total',
@@ -211,6 +235,18 @@ export const translations: Record<Language, Translations> = {
     earningsDashboardHeading: 'Painel de ganhos',
     earningsDashboardPlaceholder: 'Gráficos e métricas aparecerão aqui em uma versão futura.',
     earningsDashboardDocumentTitle: 'Ganhos — FreelanceFlow',
+    earningsDateRangeLabel: 'Intervalo de datas',
+    earningsBillableFilterLabel: 'Filtro faturável',
+    earningsChartViewLabel: 'Gráfico',
+    earningsDateRangeLast30Days: 'Últimos 30 dias',
+    earningsDateRangeQuarter: 'Trimestre',
+    earningsDateRangeYear: 'Ano',
+    earningsDateRangeAll: 'Todo o período',
+    earningsFilterAll: 'Todas',
+    earningsChartCustomer: 'Cliente',
+    earningsChartProject: 'Projeto',
+    earningsChartTag: 'Tag',
+    earningsClearAppData: 'Limpar dados do app',
   },
 };
 

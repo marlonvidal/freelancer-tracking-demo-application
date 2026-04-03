@@ -19,6 +19,7 @@ function renderEarningsRoute() {
 describe("EarningsDashboard", () => {
   beforeEach(() => {
     localStorage.removeItem("app-language");
+    localStorage.removeItem("earnings-dashboard-state");
     document.title = "";
   });
 
@@ -71,5 +72,27 @@ describe("EarningsDashboard", () => {
     expect(
       screen.getByRole("link", { name: /board/i }),
     ).toBeInTheDocument();
+  });
+
+  it("[P1] shows persisted dashboard filters from localStorage (Story 1.3)", () => {
+    localStorage.setItem(
+      "earnings-dashboard-state",
+      JSON.stringify({
+        version: 1,
+        dateRangePreset: "year",
+        billableFilter: "billable",
+        activeChart: "project",
+      }),
+    );
+    renderEarningsRoute();
+    expect(
+      screen.getByRole("combobox", { name: /date range/i }),
+    ).toHaveTextContent(/year/i);
+    expect(
+      screen.getByRole("combobox", { name: /billable/i }),
+    ).toHaveTextContent(/^billable$/i);
+    expect(screen.getByRole("combobox", { name: /chart/i })).toHaveTextContent(
+      /^project$/i,
+    );
   });
 });

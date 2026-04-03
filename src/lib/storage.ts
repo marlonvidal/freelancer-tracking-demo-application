@@ -1,4 +1,5 @@
 import { AppState, Column, Client, Task, TimeEntry, ActiveTimer } from '@/types';
+import { EARNINGS_DASHBOARD_STORAGE_KEY } from '@/lib/earnings-dashboard-storage';
 import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEY = 'freelancer-kanban-data';
@@ -140,4 +141,5 @@ export const saveState = (state: AppState): void => {
 
 export const clearState = (): void => {
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(EARNINGS_DASHBOARD_STORAGE_KEY);
 };
