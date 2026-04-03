@@ -37,6 +37,14 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
     setLocalTask(task);
   }, [task]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   if (!localTask) return null;
 
   const handleUpdate = (updates: Partial<Task>) => {
@@ -92,6 +100,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
 
           {/* Panel */}
           <motion.div
+            role="complementary"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -240,12 +249,15 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                       <span className="max-w-[120px] truncate">{tag}</span>
                       <X
                         className="h-3 w-3 cursor-pointer shrink-0"
+                        aria-label={`remove ${tag}`}
+                        role="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => removeTag(tag)}
                       />
                     </Badge>
                   ))}
                   <input
+                    data-testid="tag-input"
                     type="text"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}

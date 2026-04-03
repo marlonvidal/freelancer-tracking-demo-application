@@ -49,7 +49,7 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
     tag: string,
     confirm: "Enter" | "," = "Enter"
   ) {
-    const input = page.getByPlaceholder(/press enter or comma to add/i);
+    const input = page.getByTestId("tag-input").first();
     await input.fill(tag);
     if (confirm === ",") {
       await input.type(",");
@@ -81,7 +81,7 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
     for (const tag of tags) {
       await typeTag(page, tag);
     }
-    await page.getByRole("button", { name: /add task|save/i }).click();
+    await page.getByRole("button", { name: /create task|add task|save/i }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
   }
 
@@ -103,8 +103,7 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
   // ---------------------------------------------------------------------------
   // AC1 [P0] — Typing a tag name and pressing Enter adds a chip in AddTaskDialog
   // ---------------------------------------------------------------------------
-  test.skip("[P0] adds chip on Enter in AddTaskDialog", async ({ page }) => {
-    // THIS TEST WILL FAIL — tag chip-input not implemented yet
+  test("[P0] adds chip on Enter in AddTaskDialog", async ({ page }) => {
     await openAddTaskDialog(page);
     await typeTag(page, "design");
 
@@ -112,18 +111,15 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
     await expect(tagChipInDialog(page, "design")).toBeVisible();
 
     // Input must be cleared after confirming the tag
-    await expect(
-      page.getByPlaceholder(/press enter or comma to add/i)
-    ).toHaveValue("");
+    await expect(page.getByTestId("tag-input").first()).toHaveValue("");
   });
 
   // ---------------------------------------------------------------------------
   // AC2 [P0] — Clicking ✕ on a chip in AddTaskDialog removes it
   // ---------------------------------------------------------------------------
-  test.skip("[P0] removes chip on ✕ click in AddTaskDialog", async ({
+  test("[P0] removes chip on ✕ click in AddTaskDialog", async ({
     page,
   }) => {
-    // THIS TEST WILL FAIL — tag chip-input not implemented yet
     await openAddTaskDialog(page);
     await typeTag(page, "ui");
 
@@ -145,10 +141,9 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
   // ---------------------------------------------------------------------------
   // AC3 [P0] — Task created with tags shows colored chips on the TaskCard
   // ---------------------------------------------------------------------------
-  test.skip(
+  test(
     "[P0] chips for all tags are visible on the TaskCard after creation",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — tag rendering on TaskCard not implemented yet
       await submitTaskWithTags(page, "Tagged Task", ["design", "ui"]);
 
       const card = page
@@ -164,10 +159,9 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
   // ---------------------------------------------------------------------------
   // AC4 [P1] — Task with no tags shows NO chip row on the card
   // ---------------------------------------------------------------------------
-  test.skip(
+  test(
     "[P1] no chip row appears on TaskCard when task has no tags",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — the empty-tag guard on TaskCard is not implemented yet
       await submitTaskWithTags(page, "Untagged Task", []);
 
       const card = page
@@ -183,20 +177,16 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
   // ---------------------------------------------------------------------------
   // AC5 [P0] — TaskDetailPanel: adding/removing a tag updates the card
   // ---------------------------------------------------------------------------
-  test.skip(
+  test(
     "[P0] TaskDetailPanel tag add/remove updates the TaskCard",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — TaskDetailPanel tag input not implemented yet
       await submitTaskWithTags(page, "Detail Panel Tag Test", []);
 
       // Open the detail panel
       await openTaskDetailPanel(page, "Detail Panel Tag Test");
 
       // Add a tag via the panel chip-input
-      const panelInput = page
-        .getByRole("complementary")
-        .or(page.getByRole("dialog"))
-        .getByPlaceholder(/press enter or comma to add/i);
+      const panelInput = page.getByTestId("tag-input").first();
       await panelInput.fill("backend");
       await panelInput.press("Enter");
 
@@ -239,14 +229,13 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
   // ---------------------------------------------------------------------------
   // Edge1 [P1] — Comma-separated input is split into individual chips
   // ---------------------------------------------------------------------------
-  test.skip(
+  test(
     "[P1] comma-separated entry creates multiple trimmed chips",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — tag chip-input not implemented yet
       await openAddTaskDialog(page);
 
       // Type two tags with a comma; trailing comma triggers second chip
-      const input = page.getByPlaceholder(/press enter or comma to add/i);
+      const input = page.getByTestId("tag-input").first();
       await input.fill("design");
       await input.type(",");
       // After comma, "design" should be added; now type the second tag
@@ -262,8 +251,7 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
   // ---------------------------------------------------------------------------
   // Edge2 [P2] — Duplicate tag entry is silently ignored
   // ---------------------------------------------------------------------------
-  test.skip("[P2] duplicate tag entry is ignored", async ({ page }) => {
-    // THIS TEST WILL FAIL — duplicate-guard not implemented yet
+  test("[P2] duplicate tag entry is ignored", async ({ page }) => {
     await openAddTaskDialog(page);
     await typeTag(page, "design");
     await typeTag(page, "design"); // duplicate
@@ -280,10 +268,9 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
   // ---------------------------------------------------------------------------
   // Edge3 [P2] — Long tag is truncated with ellipsis on the chip
   // ---------------------------------------------------------------------------
-  test.skip(
+  test(
     "[P2] tag longer than 20 chars is truncated with ellipsis on the chip",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — long-tag truncation not implemented yet
       await openAddTaskDialog(page);
       const longTag = "superlongtagnameover20";
       await typeTag(page, longTag);
@@ -300,23 +287,20 @@ test.describe("Tags — Select and Display on Task Cards (ATDD)", () => {
   // ---------------------------------------------------------------------------
   // Edge4 [P3] — Portuguese locale renders translated tag input labels
   // ---------------------------------------------------------------------------
-  test.skip(
+  test(
     "[P3] Portuguese locale renders translated tag labels",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — i18n keys for tags not added yet
-      // Switch language to Portuguese (click the language toggle)
-      await page
-        .getByRole("button", { name: /language|pt|en/i })
-        .first()
-        .click();
+      // Switch language to Portuguese via the Globe dropdown
+      await page.getByRole("banner").getByRole("button").nth(1).click();
+      await page.getByRole("menuitem", { name: /português|portuguese|pt/i }).click();
 
       await openAddTaskDialog(page);
 
       // Translated label for the tag section must be visible
       await expect(page.getByText(/tags/i)).toBeVisible(); // key: tags
       await expect(
-        page.getByPlaceholder(/enter ou vírgula para adicionar/i)
-      ).toBeVisible(); // key: pressEnterToAddTag (PT)
+        page.getByTestId("tag-input").first()
+      ).toHaveAttribute("placeholder", /pressione enter ou vírgula/i);
     }
   );
 });

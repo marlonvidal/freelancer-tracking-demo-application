@@ -300,12 +300,15 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
                   <span className="max-w-[120px] truncate">{tag}</span>
                   <X
                     className="h-3 w-3 cursor-pointer shrink-0"
+                    aria-label={`remove ${tag}`}
+                    role="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => removeTag(tag)}
                   />
                 </Badge>
               ))}
               <input
+                data-testid="tag-input"
                 type="text"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}

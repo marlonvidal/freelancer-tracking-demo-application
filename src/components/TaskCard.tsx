@@ -84,6 +84,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
       style={style}
       {...attributes}
       {...listeners}
+      role="article"
       className={cn(
         'group relative bg-task-card rounded-lg border border-border p-3 cursor-grab active:cursor-grabbing',
         'hover:shadow-card-hover hover:border-border/80 transition-all duration-200',
@@ -191,7 +192,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
 
       {/* Tags */}
       {task.tags && task.tags.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
+        <div data-testid="tag-chip-row" className="mt-2 flex flex-wrap gap-1">
           {task.tags.map((tag) => (
             <Badge
               key={tag}
