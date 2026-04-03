@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import AddClientDialog from '@/components/AddClientDialog';
+import AddClientInlineForm from '@/components/AddClientDialog';
 
 interface TaskDetailPanelProps {
   task: Task | null;
@@ -29,7 +29,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
   const { state, dispatch, getClient, getTaskRate } = useApp();
   const { t } = useLanguage();
   const [localTask, setLocalTask] = useState<Task | null>(null);
-  const [addClientOpen, setAddClientOpen] = useState(false);
+  const [showNewClientForm, setShowNewClientForm] = useState(false);
 
   useEffect(() => {
     setLocalTask(task);
@@ -47,7 +47,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
 
   const handleClientCreated = (newClientId: string) => {
     handleUpdate({ clientId: newClientId });
-    setAddClientOpen(false);
+    setShowNewClientForm(false);
   };
 
   const client = getClient(localTask.clientId);
@@ -55,12 +55,6 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
   const revenue = localTask.isBillable ? (rate * localTask.timeSpent / 3600) : 0;
 
   return (
-    <>
-    <AddClientDialog
-      open={addClientOpen}
-      onOpenChange={setAddClientOpen}
-      onClientCreated={handleClientCreated}
-    />
     <AnimatePresence>
       {task && (
         <>
@@ -117,37 +111,46 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                   <User className="h-3 w-3" />
                   {t.client}
                 </Label>
-                <Select
-                  value={localTask.clientId || 'none'}
-                  onValueChange={(value) => {
-                    if (value === '__add_new__') {
-                      setAddClientOpen(true);
-                    } else {
-                      handleUpdate({ clientId: value === 'none' ? null : value });
-                    }
-                  }}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder={t.selectClient} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t.noClient}</SelectItem>
-                    {state.clients.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        <span className="flex items-center gap-2">
-                          <span
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: c.color }}
-                          />
-                          {c.name} (${c.hourlyRate}/hr)
-                        </span>
+                {showNewClientForm ? (
+                  <div className="mt-1">
+                    <AddClientInlineForm
+                      onClientCreated={handleClientCreated}
+                      onCancel={() => setShowNewClientForm(false)}
+                    />
+                  </div>
+                ) : (
+                  <Select
+                    value={localTask.clientId || 'none'}
+                    onValueChange={(value) => {
+                      if (value === '__add_new__') {
+                        setShowNewClientForm(true);
+                      } else {
+                        handleUpdate({ clientId: value === 'none' ? null : value });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="mt-1" data-testid="client-select">
+                      <SelectValue placeholder={t.selectClient} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t.noClient}</SelectItem>
+                      {state.clients.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          <span className="flex items-center gap-2">
+                            <span
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: c.color }}
+                            />
+                            {c.name} (${c.hourlyRate}/hr)
+                          </span>
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__add_new__" className="text-primary font-medium">
+                        {t.addNewClient}
                       </SelectItem>
-                    ))}
-                    <SelectItem value="__add_new__" className="text-primary font-medium">
-                      {t.addNewClient}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
               {/* Priority */}
@@ -319,7 +322,6 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
         </>
       )}
     </AnimatePresence>
-    </>
   );
 };
 

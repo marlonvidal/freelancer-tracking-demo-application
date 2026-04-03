@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import AddClientDialog from '@/components/AddClientDialog';
+import AddClientInlineForm from '@/components/AddClientDialog';
 
 interface AddTaskDialogProps {
   open: boolean;
@@ -44,16 +44,14 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
   const [hourlyRate, setHourlyRate] = useState<string>('');
   const [timeEstimate, setTimeEstimate] = useState<string>('');
   const [columnId, setColumnId] = useState<string>(defaultColumnId || state.columns[0]?.id || '');
-  const [addClientOpen, setAddClientOpen] = useState(false);
+  const [showNewClientForm, setShowNewClientForm] = useState(false);
 
   React.useEffect(() => {
-    if (defaultColumnId) {
-      setColumnId(defaultColumnId);
-    }
+    if (defaultColumnId) setColumnId(defaultColumnId);
   }, [defaultColumnId]);
 
   React.useEffect(() => {
-    if (!open) setAddClientOpen(false);
+    if (!open) setShowNewClientForm(false);
   }, [open]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -77,7 +75,6 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
       },
     });
 
-    // Reset form
     setTitle('');
     setDescription('');
     setClientId('none');
@@ -90,18 +87,12 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
 
   const handleClientCreated = (newClientId: string) => {
     setClientId(newClientId);
-    setAddClientOpen(false);
+    setShowNewClientForm(false);
   };
 
   const selectedClient = state.clients.find(c => c.id === clientId);
 
   return (
-    <>
-    <AddClientDialog
-      open={addClientOpen}
-      onOpenChange={setAddClientOpen}
-      onClientCreated={handleClientCreated}
-    />
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -154,37 +145,46 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
           {/* Client */}
           <div>
             <Label>{t.client}</Label>
-            <Select
-              value={clientId}
-              onValueChange={(value) => {
-                if (value === '__add_new__') {
-                  setAddClientOpen(true);
-                } else {
-                  setClientId(value);
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t.selectClient} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t.noClient}</SelectItem>
-                {state.clients.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    <span className="flex items-center gap-2">
-                      <span
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: c.color }}
-                      />
-                      {c.name}
-                    </span>
+            {showNewClientForm ? (
+              <div className="mt-1">
+                <AddClientInlineForm
+                  onClientCreated={handleClientCreated}
+                  onCancel={() => setShowNewClientForm(false)}
+                />
+              </div>
+            ) : (
+              <Select
+                value={clientId}
+                onValueChange={(value) => {
+                  if (value === '__add_new__') {
+                    setShowNewClientForm(true);
+                  } else {
+                    setClientId(value);
+                  }
+                }}
+              >
+                <SelectTrigger data-testid="client-select">
+                  <SelectValue placeholder={t.selectClient} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t.noClient}</SelectItem>
+                  {state.clients.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: c.color }}
+                        />
+                        {c.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="__add_new__" className="text-primary font-medium">
+                    {t.addNewClient}
                   </SelectItem>
-                ))}
-                <SelectItem value="__add_new__" className="text-primary font-medium">
-                  {t.addNewClient}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {/* Priority */}
@@ -275,7 +275,6 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
         </form>
       </DialogContent>
     </Dialog>
-    </>
   );
 };
 
