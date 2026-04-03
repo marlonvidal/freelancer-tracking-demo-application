@@ -11,9 +11,10 @@ sections_completed:
   - workflow_rules
   - anti_patterns
 status: 'complete'
-rule_count: 38
+rule_count: 62
 optimized_for_llm: true
 existing_patterns_found: 12
+last_updated: '2026-04-03'
 ---
 
 # Project Context for AI Agents
@@ -59,6 +60,15 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 - **ESLint** `^9.32.0` (flat config: `eslint.config.js`), **typescript-eslint** `^8.38.0`, **eslint-plugin-react-hooks** `^5.2.0`, **eslint-plugin-react-refresh** `^0.4.20`
 - **Vitest** `^3.2.4`, **jsdom** `^20.0.3`, **@testing-library/react** `^16.0.0`, **@testing-library/jest-dom** `^6.6.0`
+- **Playwright** `^1.59.1` — `@playwright/test`; Chromium only; test dir `tests/e2e/`
+- **@faker-js/faker** `^10.4.0` — used in test factories only
+
+**Test support structure**
+
+- `tests/support/fixtures/` — Playwright `mergeTests` fixture composition; import from here, not directly from `@playwright/test`
+- `tests/support/factories/` — Faker-based data builders (e.g. `TaskFactory`)
+- `tests/support/helpers/` — e.g. `blockKnownThirdPartyHosts` network helper
+- `tests/support/page-objects/` — POM stubs (available, not yet populated)
 
 **Dev-only**
 
@@ -78,27 +88,42 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Path alias:** import app code with `@/...` → `src/...` (configured in `tsconfig` and Vite).
 - **Module style:** `"type": "module"` — use ESM `import`/`export`; **`jsx`: `react-jsx`** (no `React` import required for JSX).
 - **Imports:** `allowImportingTsExtensions` is true — `.tsx` / `.ts` suffixes in imports are valid where the codebase already uses them (e.g. `App.tsx`).
-- **Errors:** no project-wide error-boundary convention is established; for new async flows, handle errors at the call site or with React Query’s error handling where applicable.
+- **Errors:** no project-wide error-boundary convention is established; for new async flows, handle errors at the call site or with React Query's error handling where applicable.
+- **No `process.env` in browser code** — use `import.meta.env` (Vite pattern); `process.env` is only valid in Playwright/Node test context via `.env` file.
+- **Timestamps:** store all dates/times as Unix milliseconds (`Date.now()`), not ISO strings or Date objects — matches existing `Task.createdAt`, `Task.dueDate`, `TimeEntry.startTime`.
+- **IDs:** always generate entity IDs with `uuidv4()` from `uuid` — never use `Math.random()` or sequential integers.
 
 ### Framework-Specific Rules
 
 - **Router:** `BrowserRouter` + `Routes` in `App.tsx`. **Add new routes above** the catch-all `<Route path="*" ... />` so 404s still work.
-- **React Query:** a single `QueryClient` is created in `App.tsx` and wrapped in `QueryClientProvider`. New data-fetching should use this client (or add providers inside this tree if needed).
-- **Global UI shell:** `TooltipProvider`, `Toaster` (shadcn), and Sonner `Toaster` are mounted in `App.tsx` — reuse them; don’t duplicate global toasters on every page.
-- **i18n / theme:** `LanguageProvider` wraps the app; respect existing context for language. Dark mode and theming use patterns already in context/storage — extend consistently.
+- **React Query:** a single `QueryClient` is created in `App.tsx` and wrapped in `QueryClientProvider`. New data-fetching should use this client (or add providers inside this tree if needed). **Not yet used for data fetching** (no backend) — use it when/if external API calls are added. Do not wrap individual pages in a new `QueryClientProvider`.
+- **Global UI shell:** `TooltipProvider`, `Toaster` (shadcn), and Sonner `Toaster` are mounted in `App.tsx` — reuse them; don't duplicate global toasters on every page.
+- **i18n / theme:** `LanguageProvider` wraps the app; all UI strings must use `t.<key>` from `useLanguage()` — never hardcode English (or any language) text in JSX. Add new keys to **both** `en` and `pt` translation objects in `LanguageContext.tsx`.
 - **Feature UI:** reusable primitives live under `src/components/ui/` (shadcn-style). Feature-specific components (e.g. Kanban) sit under `src/components/` or `src/pages/` as appropriate.
 - **Class names:** use `cn()` from `@/lib/utils` (`clsx` + `tailwind-merge`) for conditional Tailwind classes.
 - **App state:** global domain state is a **React reducer + Context** in `src/context/AppContext.tsx` with actions typed as a discriminated union. New global state should follow this pattern unless switching to a library is an explicit product decision.
 - **Domain types:** shared models live in `src/types/index.ts` — update types when adding fields; keep storage serialization in sync with `src/lib/storage.ts`.
-- **Persistence:** app state is loaded/saved via `lib/storage` (localStorage). **Changing shape** of `AppState` requires careful updates to load/save and default state to avoid breaking existing users’ data.
+- **Persistence:** app state is loaded/saved via `lib/storage` (localStorage). **Changing shape** of `AppState` requires careful updates to load/save and default state to avoid breaking existing users' data.
+- **dnd-kit collision detection:** `closestCorners` is used in `KanbanBoard` — if adding new DnD zones, keep this consistent.
+- **dnd-kit PointerSensor:** activation distance is `8px` (prevents accidental drag on click); do not lower this.
+- **DragOverlay:** must wrap the dragged item's component with reduced opacity/rotation — do not remove; it's required for accessible drag feedback.
+- **Single active timer invariant:** only one timer can run at a time. `START_TIMER` action automatically stops any prior timer by accumulating elapsed seconds into `timeSpent` before overwriting `activeTimer`. Never dispatch `START_TIMER` twice without `STOP_TIMER` in between from external code.
+- **Revenue formula:** `effectiveRate = task.hourlyRate ?? client.hourlyRate ?? 0`; `revenue = isBillable ? (effectiveRate × timeSpent / 3600) : 0`. Keep this consistent across `AppContext`, `TaskCard`, and `TaskDetailPanel`.
+- **`TimeEntry` array:** collected in `AppState.timeEntries` but **not yet displayed in UI**. Do not remove it; it's a future feature. When stopping a timer, create a `TimeEntry` record if implementing that feature.
 
 ### Testing Rules
 
 - **Runner:** Vitest with **jsdom** (`vitest.config.ts`).
 - **Test files:** `src/**/*.{test,spec}.{ts,tsx}`.
-- **Setup:** `src/test/setup.ts` imports `@testing-library/jest-dom` and mocks `window.matchMedia`. Add other global mocks there if multiple tests need them.
+- **Setup:** `src/test/setup.ts` imports `@testing-library/jest-dom` and mocks `window.matchMedia`. Add other global mocks there if multiple tests need them — not inline in individual test files.
 - **Globals:** `vitest/globals` is in `tsconfig.app.json` types — `describe` / `it` / `expect` need no import if using global config (match existing tests).
 - Prefer **Testing Library** queries aligned with accessibility; colocate tests near components or under a clear test naming pattern already in the repo.
+- **E2E test runner:** Playwright with `CI=1` env var enables 2 workers + 2 retries; omit `CI` locally.
+- **E2E base URL:** defaults to `http://localhost:8080`; override with `BASE_URL` env var. Dev server auto-starts via `webServer` config unless already running (`reuseExistingServer: true` locally).
+- **Fixture pattern:** import from `tests/support/fixtures` (not directly from `@playwright/test`) to get merged fixtures including `taskFactory`.
+- **Network helpers:** call `blockKnownThirdPartyHosts(page)` before `page.goto()` in specs to prevent flakiness from external requests.
+- **Selectors:** prefer `getByRole` (accessible roles) and `data-testid` attributes — not CSS selectors or fragile text matching.
+- **E2E artifacts:** traces, screenshots, and videos retained on failure in `test-results/`; HTML report at `playwright-report/`; JUnit at `test-results/junit.xml`.
 
 ### Code Quality & Style Rules
 
@@ -107,12 +132,17 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Formatting:** no Prettier config was found in discovery — follow existing file style (2-space indent, semicolons as in neighboring files).
 - **Naming:** React components **PascalCase**; hooks **`use*`**; keep `components/ui` names aligned with shadcn conventions.
 - **Documentation:** README is Lovable-oriented; **do not** add large unsolicited markdown docs unless the user asks. Inline comments only where behavior is non-obvious.
+- **shadcn/ui primitives:** 49 components exist in `src/components/ui/` — check this folder before creating any new UI primitive. Many (e.g. `Chart`, `Sidebar`, `Drawer`, `Sheet`, `Calendar`) are installed but not yet used in features; prefer them over introducing new UI libraries.
+- **Component file exports:** each feature component file exports one default component; avoid mixing multiple exported components in one file (react-refresh `only-export-components` warn rule).
 
 ### Development Workflow Rules
 
-- **Scripts:** `npm run dev` (Vite), `npm run build`, `npm run preview`, `npm run lint`, `npm test` / `npm run test:watch`.
+- **Scripts:** `npm run dev` (Vite), `npm run build`, `npm run preview`, `npm run lint`, `npm test` / `npm run test:watch`, `npm run test:e2e`.
 - **Dev server:** Vite `server.host` is `"::"`, **port `8080`**, HMR **overlay disabled** — expect that when documenting or debugging locally.
+- **E2E environment setup:** copy `.env.example` → `.env` before running e2e tests; install Playwright browsers with `npx playwright install chromium` (first time only).
+- **localStorage key:** app state lives under `"freelancer-kanban-data"` — use `clearState()` from `src/lib/storage.ts` or DevTools to reset state during development/testing.
 - **Planning artifacts:** `_bmad-output/planning-artifacts/architecture.md` may be absent; if architecture is added later, keep **this** `project-context.md` in sync with stack and boundaries.
+- **docs/ folder:** `docs/` contains AI-generated project documentation (`index.md`, `architecture.md`, etc.) — do not delete or move these; update them when significant architectural changes are made.
 - **Repo origin:** project README references **Lovable** — treat remote sync as external; follow normal git practices for branches and PRs unless team rules say otherwise (no repo-specific branch convention was found in code).
 
 ### Critical Don't-Miss Rules
@@ -120,9 +150,13 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Do not** turn on TypeScript `strict` or tighten compiler options in a drive-by change — that is a repo-wide migration.
 - **Do not** add routes **below** the `*` route in `App.tsx`.
 - **Do not** persist new fields without updating **`AppState`**, **reducer actions**, **`loadState`/`saveState`**, and **migration/default** handling where needed.
-- **Do not** import server-only APIs — this is a **Vite SPA**; any “backend” is client-side or external services you explicitly add.
+- **Do not** import server-only APIs — this is a **Vite SPA**; any "backend" is client-side or external services you explicitly add.
 - **Dnd-kit:** changing column/task order semantics must stay consistent with **reducer** and **Kanban** components to avoid desynced UI and state.
 - **Environment:** `import.meta.env` is the Vite pattern for env vars — not `process.env` in browser code unless wrapped by a defined convention.
+- **Do not** add text to the UI without adding the corresponding key to **both** `en` and `pt` translation objects in `LanguageContext.tsx`.
+- **Do not** create new UI primitives (buttons, inputs, selects, dialogs, etc.) from scratch — check `src/components/ui/` first; shadcn components for those patterns already exist.
+- **Do not** add a second `QueryClientProvider` — one already exists at the root of `App.tsx`.
+- **Do not** lower the dnd-kit `PointerSensor` activation distance below `8px` — this prevents task clicks from being interpreted as drags.
 
 ---
 
@@ -133,6 +167,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Read this file before implementing features or refactors in this repository.
 - Prefer matching existing patterns in `App.tsx`, `AppContext`, `components/ui`, and `lib/storage` over introducing parallel conventions.
 - When in doubt on typing strictness, match surrounding files and extend `src/types` explicitly for shared shapes.
+- For full project context, see `docs/index.md` → links to architecture, component inventory, and development guide.
 
 **For Humans**
 
