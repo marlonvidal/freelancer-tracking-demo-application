@@ -14,7 +14,7 @@ type Action =
   | { type: 'UPDATE_COLUMN'; payload: { id: string; title: string } }
   | { type: 'DELETE_COLUMN'; payload: string }
   | { type: 'REORDER_COLUMNS'; payload: string[] }
-  | { type: 'ADD_CLIENT'; payload: Omit<Client, 'id'> }
+  | { type: 'ADD_CLIENT'; payload: Omit<Client, 'id'> & { id?: string } }
   | { type: 'UPDATE_CLIENT'; payload: { id: string; updates: Partial<Client> } }
   | { type: 'DELETE_CLIENT'; payload: string }
   | { type: 'START_TIMER'; payload: string }
@@ -122,7 +122,7 @@ const reducer = (state: AppState, action: Action): AppState => {
     case 'ADD_CLIENT': {
       const newClient: Client = {
         ...action.payload,
-        id: uuidv4(),
+        id: action.payload.id ?? uuidv4(),
       };
       return { ...state, clients: [...state.clients, newClient] };
     }

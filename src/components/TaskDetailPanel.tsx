@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import AddClientDialog from '@/components/AddClientDialog';
 
 interface TaskDetailPanelProps {
   task: Task | null;
@@ -28,6 +29,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
   const { state, dispatch, getClient, getTaskRate } = useApp();
   const { t } = useLanguage();
   const [localTask, setLocalTask] = useState<Task | null>(null);
+  const [addClientOpen, setAddClientOpen] = useState(false);
 
   useEffect(() => {
     setLocalTask(task);
@@ -43,11 +45,22 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
     });
   };
 
+  const handleClientCreated = (newClientId: string) => {
+    handleUpdate({ clientId: newClientId });
+    setAddClientOpen(false);
+  };
+
   const client = getClient(localTask.clientId);
   const rate = getTaskRate(localTask);
   const revenue = localTask.isBillable ? (rate * localTask.timeSpent / 3600) : 0;
 
   return (
+    <>
+    <AddClientDialog
+      open={addClientOpen}
+      onOpenChange={setAddClientOpen}
+      onClientCreated={handleClientCreated}
+    />
     <AnimatePresence>
       {task && (
         <>
@@ -106,7 +119,13 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                 </Label>
                 <Select
                   value={localTask.clientId || 'none'}
-                  onValueChange={(value) => handleUpdate({ clientId: value === 'none' ? null : value })}
+                  onValueChange={(value) => {
+                    if (value === '__add_new__') {
+                      setAddClientOpen(true);
+                    } else {
+                      handleUpdate({ clientId: value === 'none' ? null : value });
+                    }
+                  }}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder={t.selectClient} />
@@ -124,6 +143,9 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                         </span>
                       </SelectItem>
                     ))}
+                    <SelectItem value="__add_new__" className="text-primary font-medium">
+                      {t.addNewClient}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -297,6 +319,7 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
         </>
       )}
     </AnimatePresence>
+    </>
   );
 };
 

@@ -58,6 +58,13 @@ interface Translations {
   optional: string;
   createTask: string;
   
+  // Add Client Dialog
+  addNewClient: string;
+  clientName: string;
+  newClient: string;
+  saveClient: string;
+  clientColor: string;
+
   // Settings
   language: string;
   english: string;
@@ -111,6 +118,11 @@ const translations: Record<Language, Translations> = {
     taskDescription: 'Task Description',
     optional: 'Optional',
     createTask: 'Create Task',
+    addNewClient: '+ Add new client',
+    clientName: 'Client name',
+    newClient: 'New Client',
+    saveClient: 'Save client',
+    clientColor: 'Color',
     language: 'Language',
     english: 'English',
     portuguese: 'Portuguese',
@@ -161,6 +173,11 @@ const translations: Record<Language, Translations> = {
     taskDescription: 'Descrição da Tarefa',
     optional: 'Opcional',
     createTask: 'Criar Tarefa',
+    addNewClient: '+ Adicionar novo cliente',
+    clientName: 'Nome do cliente',
+    newClient: 'Novo Cliente',
+    saveClient: 'Salvar cliente',
+    clientColor: 'Cor',
     language: 'Idioma',
     english: 'Inglês',
     portuguese: 'Português',
