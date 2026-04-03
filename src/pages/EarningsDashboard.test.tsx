@@ -60,4 +60,16 @@ describe("EarningsDashboard", () => {
     view.unmount();
     expect(document.title).toBe("Prior Page Title");
   });
+
+  it("[P1] renders Header with navigation links (Story 1.2)", () => {
+    renderEarningsRoute();
+    const nav = screen.getByRole("navigation");
+    expect(nav).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /earnings/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /board/i }),
+    ).toBeInTheDocument();
+  });
 });

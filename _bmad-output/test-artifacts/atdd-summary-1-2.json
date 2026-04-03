@@ -1,0 +1,23 @@
+{
+  "tdd_phase": "RED",
+  "story_id": "1-2",
+  "total_tests": 8,
+  "api_tests": 0,
+  "e2e_tests": 8,
+  "all_tests_skipped": true,
+  "expected_to_fail": true,
+  "fixtures_created": 0,
+  "subagent_execution": "SEQUENTIAL (no API scope; E2E only)",
+  "performance_gain": "baseline",
+  "acceptance_criteria_covered": [
+    "AC1: Header nav shows Earnings and Board links with translated text (EN)",
+    "AC1: Header nav shows Earnings and Board links with translated text (PT)",
+    "AC2: Clicking Earnings link navigates to /earnings and shows EarningsDashboard",
+    "AC3: Active Earnings link is visually highlighted on /earnings",
+    "AC3: Active Board link is visually highlighted on /",
+    "AC4: Clicking Board link from /earnings returns to / without data loss",
+    "AC1+AC4: Earnings nav links present on /earnings page header",
+    "AC5: Navigation links accessible on 320px viewport"
+  ],
+  "api_scope": "none — Story 1.2 is client-only SPA navigation; no API tests generated"
+}

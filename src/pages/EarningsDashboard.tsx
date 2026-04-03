@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { AppProvider } from '@/context/AppContext';
 import { useLanguage } from '@/context/LanguageContext';
+import Header from '@/components/Header';
 
 const EarningsDashboardContent: React.FC = () => {
   const { t } = useLanguage();
@@ -26,6 +27,7 @@ const EarningsDashboardContent: React.FC = () => {
       data-testid="earnings-dashboard"
       className="min-h-screen flex flex-col bg-background"
     >
+      <Header />
       <main className="flex-1 p-6">
         <h1 className="text-3xl font-semibold tracking-tight">
           {t.earningsDashboardHeading}
