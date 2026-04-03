@@ -76,7 +76,7 @@ interface Translations {
   portuguese: string;
 }
 
-const translations: Record<Language, Translations> = {
+export const translations: Record<Language, Translations> = {
   en: {
     totalRevenue: 'Total Revenue',
     billableHours: 'Billable Hours',
