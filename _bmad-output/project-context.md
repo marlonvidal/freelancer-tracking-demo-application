@@ -1,7 +1,7 @@
 ---
 project_name: 'freelancer-tracking-demo-application'
 user_name: 'Marlon'
-date: '2026-04-03T12:00:00.000Z'
+date: '2026-04-03T18:00:00.000Z'
 sections_completed:
   - technology_stack
   - language_rules
@@ -10,11 +10,13 @@ sections_completed:
   - quality_rules
   - workflow_rules
   - anti_patterns
+  - epic_1_retro_2026_04_03
 status: 'complete'
-rule_count: 62
+rule_count: 71
 optimized_for_llm: true
 existing_patterns_found: 12
 last_updated: '2026-04-03'
+retro_source: '_bmad-output/implementation-artifacts/epic-1-retro-2026-04-03.md'
 ---
 
 # Project Context for AI Agents
@@ -86,6 +88,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 - **TypeScript `strict` is off** (`tsconfig.app.json`: `"strict": false`). Do not assume strict null checks or strict mode; **`noImplicitAny` is off** — explicit typing is still encouraged for public APIs and shared types.
 - **Path alias:** import app code with `@/...` → `src/...` (configured in `tsconfig` and Vite).
+- **App shell imports:** In `App.tsx` (and similar entry files), **use `@/pages/...` for page imports** — do not mix `./pages/...` with `@/` without an explicit, documented exception in this file. Mixed style causes repeated review noise (Epic 1 retro).
 - **Module style:** `"type": "module"` — use ESM `import`/`export`; **`jsx`: `react-jsx`** (no `React` import required for JSX).
 - **Imports:** `allowImportingTsExtensions` is true — `.tsx` / `.ts` suffixes in imports are valid where the codebase already uses them (e.g. `App.tsx`).
 - **Errors:** no project-wide error-boundary convention is established; for new async flows, handle errors at the call site or with React Query's error handling where applicable.
@@ -104,11 +107,14 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **App state:** global domain state is a **React reducer + Context** in `src/context/AppContext.tsx` with actions typed as a discriminated union. New global state should follow this pattern unless switching to a library is an explicit product decision.
 - **Domain types:** shared models live in `src/types/index.ts` — update types when adding fields; keep storage serialization in sync with `src/lib/storage.ts`.
 - **Persistence:** app state is loaded/saved via `lib/storage` (localStorage). **Changing shape** of `AppState` requires careful updates to load/save and default state to avoid breaking existing users' data.
+- **Earnings dashboard:** Route `/earnings` uses `EarningsDashboard` with `AppProvider`, `EarningsDashboardStateProvider`, and shared `Header` (Kanban-only props like `onAddTask` omitted on this route). Interim filter UI (Story 1.3) may be replaced in Epic 4; **keep `src/lib/earnings-dashboard-storage.ts` and `EarningsDashboardStateContext` as the persistence contract** unless an architect-approved change adds a migration — no duplicate storage keys.
+- **Earnings localStorage:** Key is **`earnings-dashboard-state`** (`EARNINGS_DASHBOARD_STORAGE_KEY`). Corrupt JSON / missing keys are handled defensively in the earnings storage module; follow that pattern for any extension.
+- **SPA `document.title`:** If a route sets `document.title`, restore the previous title on unmount so back navigation and other routes do not leak the wrong title (see `EarningsDashboard` pattern).
 - **dnd-kit collision detection:** `closestCorners` is used in `KanbanBoard` — if adding new DnD zones, keep this consistent.
 - **dnd-kit PointerSensor:** activation distance is `8px` (prevents accidental drag on click); do not lower this.
 - **DragOverlay:** must wrap the dragged item's component with reduced opacity/rotation — do not remove; it's required for accessible drag feedback.
 - **Single active timer invariant:** only one timer can run at a time. `START_TIMER` action automatically stops any prior timer by accumulating elapsed seconds into `timeSpent` before overwriting `activeTimer`. Never dispatch `START_TIMER` twice without `STOP_TIMER` in between from external code.
-- **Revenue formula:** `effectiveRate = task.hourlyRate ?? client.hourlyRate ?? 0`; `revenue = isBillable ? (effectiveRate × timeSpent / 3600) : 0`. Keep this consistent across `AppContext`, `TaskCard`, and `TaskDetailPanel`.
+- **Revenue formula:** `effectiveRate = task.hourlyRate ?? client.hourlyRate ?? 0`; `revenue = isBillable ? (effectiveRate × timeSpent / 3600) : 0`. Keep this consistent across `AppContext`, `TaskCard`, and `TaskDetailPanel`. For **Epic 2+** calculation work, treat **FR26 (formula parity)** as a non‑negotiable gate — add regression tests before refactoring helpers.
 - **`TimeEntry` array:** collected in `AppState.timeEntries` but **not yet displayed in UI**. Do not remove it; it's a future feature. When stopping a timer, create a `TimeEntry` record if implementing that feature.
 
 ### Testing Rules
@@ -123,6 +129,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Fixture pattern:** import from `tests/support/fixtures` (not directly from `@playwright/test`) to get merged fixtures including `taskFactory`.
 - **Network helpers:** call `blockKnownThirdPartyHosts(page)` before `page.goto()` in specs to prevent flakiness from external requests.
 - **Selectors:** prefer `getByRole` (accessible roles) and `data-testid` attributes — not CSS selectors or fragile text matching.
+- **E2E + i18n:** The app reads locale from **`localStorage` key `app-language`** (`en` | `pt`). Before `page.goto`, use `addInitScript` (or equivalent) to set `app-language` to the locale your assertions expect. Prefer stable **`data-testid`** targets for bilingual surfaces so tests do not depend on a single language string.
 - **E2E artifacts:** traces, screenshots, and videos retained on failure in `test-results/`; HTML report at `playwright-report/`; JUnit at `test-results/junit.xml`.
 
 ### Code Quality & Style Rules
@@ -132,6 +139,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Formatting:** no Prettier config was found in discovery — follow existing file style (2-space indent, semicolons as in neighboring files).
 - **Naming:** React components **PascalCase**; hooks **`use*`**; keep `components/ui` names aligned with shadcn conventions.
 - **Documentation:** README is Lovable-oriented; **do not** add large unsolicited markdown docs unless the user asks. Inline comments only where behavior is non-obvious.
+- **Deferred cleanup (track explicitly):** Epic 1 deferred variable shadowing of `t` in `Header` and optional lazy-loading of revenue aggregates when stats are hidden — address when that file or earnings summaries are next in scope; do not ignore indefinitely.
 - **shadcn/ui primitives:** 49 components exist in `src/components/ui/` — check this folder before creating any new UI primitive. Many (e.g. `Chart`, `Sidebar`, `Drawer`, `Sheet`, `Calendar`) are installed but not yet used in features; prefer them over introducing new UI libraries.
 - **Component file exports:** each feature component file exports one default component; avoid mixing multiple exported components in one file (react-refresh `only-export-components` warn rule).
 
@@ -140,7 +148,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Scripts:** `npm run dev` (Vite), `npm run build`, `npm run preview`, `npm run lint`, `npm test` / `npm run test:watch`, `npm run test:e2e`.
 - **Dev server:** Vite `server.host` is `"::"`, **port `8080`**, HMR **overlay disabled** — expect that when documenting or debugging locally.
 - **E2E environment setup:** copy `.env.example` → `.env` before running e2e tests; install Playwright browsers with `npx playwright install chromium` (first time only).
-- **localStorage key:** app state lives under `"freelancer-kanban-data"` — use `clearState()` from `src/lib/storage.ts` or DevTools to reset state during development/testing.
+- **localStorage keys:** Kanban app state under `"freelancer-kanban-data"`; earnings dashboard filter/chart state under `"earnings-dashboard-state"`. Use **`clearState()`** from `src/lib/storage.ts` (or DevTools) to reset user-visible persisted data during development/testing — `clearState()` must clear **every** user-visible persistence key (see implementation in `storage.ts`).
 - **Planning artifacts:** `_bmad-output/planning-artifacts/architecture.md` may be absent; if architecture is added later, keep **this** `project-context.md` in sync with stack and boundaries.
 - **docs/ folder:** `docs/` contains AI-generated project documentation (`index.md`, `architecture.md`, etc.) — do not delete or move these; update them when significant architectural changes are made.
 - **Repo origin:** project README references **Lovable** — treat remote sync as external; follow normal git practices for branches and PRs unless team rules say otherwise (no repo-specific branch convention was found in code).
@@ -150,6 +158,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Do not** turn on TypeScript `strict` or tighten compiler options in a drive-by change — that is a repo-wide migration.
 - **Do not** add routes **below** the `*` route in `App.tsx`.
 - **Do not** persist new fields without updating **`AppState`**, **reducer actions**, **`loadState`/`saveState`**, and **migration/default** handling where needed.
+- **Do not** introduce a new **`localStorage` key** for user-visible state without updating **`clearState()`** in `src/lib/storage.ts` so “clear app data” resets it (Epic 1.3 / FR42 pattern).
 - **Do not** import server-only APIs — this is a **Vite SPA**; any "backend" is client-side or external services you explicitly add.
 - **Dnd-kit:** changing column/task order semantics must stay consistent with **reducer** and **Kanban** components to avoid desynced UI and state.
 - **Environment:** `import.meta.env` is the Vite pattern for env vars — not `process.env` in browser code unless wrapped by a defined convention.
@@ -175,4 +184,5 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Update when major dependencies or state/persistence patterns change.
 - Optional: link from `README.md` so contributors know the file exists.
 
-Last Updated: 2026-04-03
+Last Updated: 2026-04-03  
+Aligned with: Epic 1 retrospective (`epic-1-retro-2026-04-03.md`) — import consistency, E2E i18n seeding, `clearState` / earnings persistence contract, Epic 2 FR26 bar, Epic 4 UI handoff notes.
