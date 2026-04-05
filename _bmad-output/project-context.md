@@ -11,12 +11,13 @@ sections_completed:
   - workflow_rules
   - anti_patterns
   - epic_1_retro_2026_04_03
+  - epic_2_retro_2026_04_05
 status: 'complete'
-rule_count: 71
+rule_count: 81
 optimized_for_llm: true
 existing_patterns_found: 12
-last_updated: '2026-04-03'
-retro_source: '_bmad-output/implementation-artifacts/epic-1-retro-2026-04-03.md'
+last_updated: '2026-04-05'
+retro_source: '_bmad-output/implementation-artifacts/epic-2-retro-2026-04-05.md'
 ---
 
 # Project Context for AI Agents
@@ -115,6 +116,9 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **DragOverlay:** must wrap the dragged item's component with reduced opacity/rotation — do not remove; it's required for accessible drag feedback.
 - **Single active timer invariant:** only one timer can run at a time. `START_TIMER` action automatically stops any prior timer by accumulating elapsed seconds into `timeSpent` before overwriting `activeTimer`. Never dispatch `START_TIMER` twice without `STOP_TIMER` in between from external code.
 - **Revenue formula:** `effectiveRate = task.hourlyRate ?? client.hourlyRate ?? 0`; `revenue = isBillable ? (effectiveRate × timeSpent / 3600) : 0`. Keep this consistent across `AppContext`, `TaskCard`, and `TaskDetailPanel`. For **Epic 2+** calculation work, treat **FR26 (formula parity)** as a non‑negotiable gate — add regression tests before refactoring helpers.
+- **Nullish coalescing for rate fields (`??` not `||`):** Rate fields that can legitimately be `0` (e.g. `task.hourlyRate`, `client.hourlyRate`) must use `??`, never `||`. Logical OR treats `0` as falsy and silently falls through to the next default, overriding a valid zero-rate task override with the client rate. This bug existed in `AppContext.getTaskRate` and was fixed in Story 2.1 — do not regress it.
+- **Tag revenue split contract (Epic 3):** When distributing task revenue across tags, the formula is `taskRevenue / tags.length` per tag — a strict `1/N` split, not full revenue per tag. Tasks with no tags contribute their revenue to an `"Untagged"` sentinel bucket. Established in Story 2.1 AC3; Story 3.3 display logic must match this exactly — do not re-derive the math.
+- **`getTotalRevenue` in `AppContext` is unfiltered:** The Kanban global `getTotalRevenue` does not apply date-range filters. The earnings dashboard correctly filters via `filterTasksForEarnings`. Do not unify or cross-reference these for earnings display logic until Epic 5 alignment work is explicitly planned. Tracked as medium-priority debt in `deferred-work.md`.
 - **`TimeEntry` array:** collected in `AppState.timeEntries` but **not yet displayed in UI**. Do not remove it; it's a future feature. When stopping a timer, create a `TimeEntry` record if implementing that feature.
 
 ### Testing Rules
@@ -131,6 +135,16 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Selectors:** prefer `getByRole` (accessible roles) and `data-testid` attributes — not CSS selectors or fragile text matching.
 - **E2E + i18n:** The app reads locale from **`localStorage` key `app-language`** (`en` | `pt`). Before `page.goto`, use `addInitScript` (or equivalent) to set `app-language` to the locale your assertions expect. Prefer stable **`data-testid`** targets for bilingual surfaces so tests do not depend on a single language string.
 - **E2E artifacts:** traces, screenshots, and videos retained on failure in `test-results/`; HTML report at `playwright-report/`; JUnit at `test-results/junit.xml`.
+
+**E2E Standing Conventions (codified from Epic 2 retro — Action B1):**
+
+- **`--workers=1` for local E2E runs:** Always run Playwright locally with `--workers=1` (e.g. `npx playwright test --workers=1`). Default parallel execution causes intermittent timeouts, especially for timing-sensitive rendering tests. CI uses `workers: 2` via the `CI` env var in `playwright.config.ts` — do not change the config file to force serial globally.
+- **`{ exact: true }` for text assertions:** Always pass `{ exact: true }` to `getByText()` when the target string could appear as a substring of another visible element's text (e.g. `"Billable Revenue"` matches inside `"Non-Billable Revenue"` in strict mode). Omitting it causes Playwright strict-mode errors.
+- **Explicit app-state seeding for count/empty-state tests:** The app ships with **5 sample tasks** by default (stored in `localStorage` key `"freelancer-kanban-data"`). Any E2E test asserting on task count, metric totals, or an empty state **must** seed explicit data via `page.addInitScript()` — never rely on app defaults.
+
+**recharts / SVG Testing Patterns (Action B2 — finalize before Story 3.1):**
+
+- **recharts SVG Playwright patterns:** SVG `<text>` elements are not reached by standard `getByText()` — use `locator('svg text').filter(...)` or scope queries to a `data-testid` chart container. Tooltip hover assertions: call `hover()` on the chart area, then await the tooltip container's visibility, not its text content directly. Legend click interactions drive recharts internal state — assert on resulting data visibility, not on the legend element itself. Document proven patterns in this section as each Epic 3 story validates them.
 
 ### Code Quality & Style Rules
 
@@ -166,6 +180,9 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Do not** create new UI primitives (buttons, inputs, selects, dialogs, etc.) from scratch — check `src/components/ui/` first; shadcn components for those patterns already exist.
 - **Do not** add a second `QueryClientProvider` — one already exists at the root of `App.tsx`.
 - **Do not** lower the dnd-kit `PointerSensor` activation distance below `8px` — this prevents task clicks from being interpreted as drags.
+- **Do not** use `||` for rate fallback chains where `0` is a valid override — use `??`. `task.hourlyRate || client.hourlyRate` silently ignores a deliberately set zero task rate (Epic 2 regression risk).
+- **Do not** write count-sensitive or empty-state E2E tests without seeding explicit `localStorage` app data via `addInitScript` — the app default state contains 5 sample tasks.
+- **Do not** use `getByText()` without `{ exact: true }` when the target label text could be a substring of a longer label visible in the same view.
 
 ---
 
@@ -184,5 +201,6 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Update when major dependencies or state/persistence patterns change.
 - Optional: link from `README.md` so contributors know the file exists.
 
-Last Updated: 2026-04-03  
-Aligned with: Epic 1 retrospective (`epic-1-retro-2026-04-03.md`) — import consistency, E2E i18n seeding, `clearState` / earnings persistence contract, Epic 2 FR26 bar, Epic 4 UI handoff notes.
+Last Updated: 2026-04-05  
+Aligned with: Epic 2 retrospective (`epic-2-retro-2026-04-05.md`) — E2E standing conventions (`--workers=1`, `{ exact: true }`, explicit state seeding), recharts/SVG Playwright patterns, `??` vs `||` for zero-rate fields, tag revenue `1/N` split contract, `getTotalRevenue` date-filter debt.  
+Previously aligned with: Epic 1 retrospective (`epic-1-retro-2026-04-03.md`) — import consistency, E2E i18n seeding, `clearState` / earnings persistence contract, FR26 bar, Epic 4 UI handoff notes.

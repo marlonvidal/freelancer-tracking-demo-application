@@ -8,6 +8,11 @@
 
 - **`getTotalRevenue` uses all tasks, no dashboard date range** — Pre-existing `AppContext` behavior: totals sum every task via `getTaskRevenue`. Story 2.1 adds filtered aggregations for Epic 2+; aligning global dashboard totals with persisted date filters would be a separate story/product decision.
 
+## Deferred from: Epic 1 retro action item A4 (carried through Epic 2, not addressed)
+
+- **Header `t` variable shadowing** — `Header.tsx` shadows the `t` translation variable; pre-existing, low severity. Address when `Header.tsx` is next edited.
+- **Lazy metrics computation** — Optional revenue aggregates computed on earnings page even when stats panel is hidden; minor performance pre-optimization. Address if profiling confirms cost.
+
 ## Deferred from: code review of 2-2-implement-summary-metrics-calculations.md (2026-04-05)
 
 - **`getTaskBillableRevenue` called for non-billable tasks in metrics loop** — In `calculateSummaryMetrics`, `getTaskBillableRevenue` is called for every filtered task but the result is used only if `task.isBillable`. For non-billable tasks the call returns 0 and is discarded. Harmless micro-inefficiency consistent with the spec skeleton; revisit if profiling shows cost.
