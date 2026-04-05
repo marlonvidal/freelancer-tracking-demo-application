@@ -95,6 +95,13 @@ interface Translations {
   earningsChartProject: string;
   earningsChartTag: string;
   earningsClearAppData: string;
+  earningsTotalRevenue: string;
+  earningsBillableRevenue: string;
+  earningsNonBillableRevenue: string;
+  earningsAvgHourlyRate: string;
+  earningsTaskCount: string;
+  earningsTaskCountTotal: string;
+  earningsTaskCountBillable: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -172,6 +179,13 @@ export const translations: Record<Language, Translations> = {
     earningsChartProject: 'Project',
     earningsChartTag: 'Tag',
     earningsClearAppData: 'Clear app data',
+    earningsTotalRevenue: 'Total Revenue',
+    earningsBillableRevenue: 'Billable Revenue',
+    earningsNonBillableRevenue: 'Non-Billable Revenue',
+    earningsAvgHourlyRate: 'Average Hourly Rate',
+    earningsTaskCount: 'Task Count',
+    earningsTaskCountTotal: 'total',
+    earningsTaskCountBillable: 'billable',
   },
   pt: {
     totalRevenue: 'Receita Total',
@@ -247,6 +261,13 @@ export const translations: Record<Language, Translations> = {
     earningsChartProject: 'Projeto',
     earningsChartTag: 'Tag',
     earningsClearAppData: 'Limpar dados do app',
+    earningsTotalRevenue: 'Receita Total',
+    earningsBillableRevenue: 'Receita Faturável',
+    earningsNonBillableRevenue: 'Receita Não Faturável',
+    earningsAvgHourlyRate: 'Taxa Horária Média',
+    earningsTaskCount: 'Total de Tarefas',
+    earningsTaskCountTotal: 'total',
+    earningsTaskCountBillable: 'faturável',
   },
 };
 

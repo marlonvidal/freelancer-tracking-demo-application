@@ -6,6 +6,7 @@ import {
   calculateRevenueByCustomer,
   calculateRevenueByProject,
   calculateRevenueByTag,
+  calculateSummaryMetrics,
   filterTasksForEarnings,
   getEffectiveHourlyRate,
   getTaskBillableRevenue,
@@ -314,5 +315,160 @@ describe("aggregations", () => {
     expect(calculateRevenueByCustomer(tasks, clients, range, "billable")).toEqual(
       [],
     );
+  });
+});
+
+const OPEN_RANGE = { startMs: 0, endMs: 9_999_999_999_999 };
+
+describe("calculateSummaryMetrics", () => {
+  it("basic billable task produces correct totalRevenue, billableRevenue, averageHourlyRate, taskCounts", () => {
+    const tasks = [
+      task({ id: "t1", isBillable: true, timeSpent: 3600, hourlyRate: null, createdAt: 1 }),
+    ];
+    const metrics = calculateSummaryMetrics(tasks, clients, OPEN_RANGE, "all");
+    expect(metrics.totalRevenue).toBeCloseTo(100, 5);
+    expect(metrics.billableRevenue).toBeCloseTo(100, 5);
+    expect(metrics.nonBillableRevenue).toBe(0);
+    expect(metrics.averageHourlyRate).toBeCloseTo(100, 5);
+    expect(metrics.totalTaskCount).toBe(1);
+    expect(metrics.billableTaskCount).toBe(1);
+  });
+
+  it("non-billable task produces totalRevenue=0 and billableTaskCount=0", () => {
+    const tasks = [
+      task({ id: "t1", isBillable: false, timeSpent: 3600, createdAt: 1 }),
+    ];
+    const metrics = calculateSummaryMetrics(tasks, clients, OPEN_RANGE, "all");
+    expect(metrics.totalRevenue).toBe(0);
+    expect(metrics.billableRevenue).toBe(0);
+    expect(metrics.nonBillableRevenue).toBe(0);
+    expect(metrics.totalTaskCount).toBe(1);
+    expect(metrics.billableTaskCount).toBe(0);
+  });
+
+  it("mixed billable/non-billable tasks with billableFilter='all' counts both", () => {
+    const tasks = [
+      task({ id: "b1", isBillable: true, timeSpent: 3600, createdAt: 1 }),
+      task({ id: "nb1", isBillable: false, timeSpent: 3600, createdAt: 2 }),
+    ];
+    const metrics = calculateSummaryMetrics(tasks, clients, OPEN_RANGE, "all");
+    expect(metrics.totalTaskCount).toBe(2);
+    expect(metrics.billableTaskCount).toBe(1);
+    expect(metrics.billableRevenue).toBeCloseTo(100, 5);
+    expect(metrics.totalRevenue).toBeCloseTo(100, 5);
+  });
+
+  it("billableFilter='billable' excludes non-billable tasks from all metrics", () => {
+    const tasks = [
+      task({ id: "b1", isBillable: true, timeSpent: 3600, createdAt: 1 }),
+      task({ id: "nb1", isBillable: false, timeSpent: 3600, createdAt: 2 }),
+    ];
+    const metrics = calculateSummaryMetrics(tasks, clients, OPEN_RANGE, "billable");
+    expect(metrics.totalTaskCount).toBe(1);
+    expect(metrics.billableTaskCount).toBe(1);
+    expect(metrics.billableRevenue).toBeCloseTo(100, 5);
+    expect(metrics.totalRevenue).toBeCloseTo(100, 5);
+  });
+
+  it("billableFilter='nonBillable' returns all-zero revenue but correct totalTaskCount", () => {
+    const tasks = [
+      task({ id: "b1", isBillable: true, timeSpent: 3600, createdAt: 1 }),
+      task({ id: "nb1", isBillable: false, timeSpent: 3600, createdAt: 2 }),
+      task({ id: "nb2", isBillable: false, timeSpent: 1800, createdAt: 3 }),
+    ];
+    const metrics = calculateSummaryMetrics(tasks, clients, OPEN_RANGE, "nonBillable");
+    expect(metrics.totalRevenue).toBe(0);
+    expect(metrics.billableRevenue).toBe(0);
+    expect(metrics.nonBillableRevenue).toBe(0);
+    expect(metrics.totalTaskCount).toBe(2);
+    expect(metrics.billableTaskCount).toBe(0);
+  });
+
+  it("empty task list returns all-zero SummaryMetrics without throwing", () => {
+    const metrics = calculateSummaryMetrics([], [], OPEN_RANGE, "all");
+    expect(metrics.totalRevenue).toBe(0);
+    expect(metrics.billableRevenue).toBe(0);
+    expect(metrics.nonBillableRevenue).toBe(0);
+    expect(metrics.averageHourlyRate).toBe(0);
+    expect(metrics.totalTaskCount).toBe(0);
+    expect(metrics.billableTaskCount).toBe(0);
+  });
+
+  it("date range filter excludes tasks outside the window", () => {
+    const range = { startMs: 1000, endMs: 2000 };
+    const tasks = [
+      task({ id: "in", isBillable: true, timeSpent: 3600, createdAt: 1500 }),
+      task({ id: "before", isBillable: true, timeSpent: 3600, createdAt: 500 }),
+      task({ id: "after", isBillable: true, timeSpent: 3600, createdAt: 3000 }),
+    ];
+    const metrics = calculateSummaryMetrics(tasks, clients, range, "all");
+    expect(metrics.totalTaskCount).toBe(1);
+    expect(metrics.billableTaskCount).toBe(1);
+    expect(metrics.totalRevenue).toBeCloseTo(100, 5);
+  });
+
+  it("timeSpent=0 on all billable tasks → averageHourlyRate=0, never Infinity or NaN", () => {
+    const tasks = [
+      task({ id: "t1", isBillable: true, timeSpent: 0, createdAt: 1 }),
+    ];
+    const metrics = calculateSummaryMetrics(tasks, clients, OPEN_RANGE, "all");
+    expect(metrics.averageHourlyRate).toBe(0);
+    expect(Number.isFinite(metrics.averageHourlyRate)).toBe(true);
+    expect(Number.isNaN(metrics.averageHourlyRate)).toBe(false);
+  });
+
+  it("clientId=null task with no task-level hourlyRate produces 0 revenue safely", () => {
+    const tasks = [
+      task({ id: "t1", isBillable: true, clientId: null, hourlyRate: null, timeSpent: 3600, createdAt: 1 }),
+    ];
+    let threw = false;
+    let metrics: ReturnType<typeof calculateSummaryMetrics> | null = null;
+    try {
+      metrics = calculateSummaryMetrics(tasks, [], OPEN_RANGE, "all");
+    } catch {
+      threw = true;
+    }
+    expect(threw).toBe(false);
+    expect(metrics?.totalRevenue).toBe(0);
+    expect(metrics?.averageHourlyRate).toBe(0);
+  });
+
+  it("task-level hourlyRate override wins over client hourlyRate", () => {
+    const tasks = [
+      task({ id: "t1", isBillable: true, timeSpent: 3600, hourlyRate: 200, createdAt: 1 }),
+    ];
+    const metrics = calculateSummaryMetrics(tasks, clients, OPEN_RANGE, "all");
+    expect(metrics.totalRevenue).toBeCloseTo(200, 5);
+    expect(metrics.averageHourlyRate).toBeCloseTo(200, 5);
+  });
+
+  it("totalRevenue always equals billableRevenue; nonBillableRevenue is always 0", () => {
+    const tasks = [
+      task({ id: "b", isBillable: true, timeSpent: 3600, createdAt: 1 }),
+      task({ id: "nb", isBillable: false, timeSpent: 3600, createdAt: 2 }),
+    ];
+    const metrics = calculateSummaryMetrics(tasks, clients, OPEN_RANGE, "all");
+    expect(metrics.totalRevenue).toBe(metrics.billableRevenue);
+    expect(metrics.nonBillableRevenue).toBe(0);
+  });
+
+  it("[P1] weighted average hourly rate across multiple billable tasks with different rates", () => {
+    // task1: 2h at $100/hr → revenue = $200
+    // task2: 1h at $60/hr  → revenue = $60
+    // weighted avg = $260 / 3h ≈ $86.67
+    const twoClients: Client[] = [
+      { id: "c1", name: "Acme", hourlyRate: 100, color: "#000" },
+    ];
+    const tasks = [
+      task({ id: "t1", isBillable: true, timeSpent: 7200, hourlyRate: null, clientId: "c1", createdAt: 1 }),
+      task({ id: "t2", isBillable: true, timeSpent: 3600, hourlyRate: 60, clientId: null, createdAt: 2 }),
+    ];
+    const metrics = calculateSummaryMetrics(tasks, twoClients, OPEN_RANGE, "all");
+    expect(metrics.billableRevenue).toBeCloseTo(260, 5);
+    expect(metrics.totalRevenue).toBeCloseTo(260, 5);
+    expect(metrics.billableTaskCount).toBe(2);
+    expect(metrics.totalTaskCount).toBe(2);
+    // Weighted avg = 260 / (10800/3600) = 260 / 3 ≈ 86.667
+    expect(metrics.averageHourlyRate).toBeCloseTo(260 / 3, 4);
   });
 });

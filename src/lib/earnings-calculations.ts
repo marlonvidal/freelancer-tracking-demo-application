@@ -41,6 +41,15 @@ export type RevenueByTagRow = {
   taskCount: number;
 };
 
+export type SummaryMetrics = {
+  totalRevenue: number;
+  billableRevenue: number;
+  nonBillableRevenue: number;
+  averageHourlyRate: number;
+  totalTaskCount: number;
+  billableTaskCount: number;
+};
+
 const UNASSIGNED_NAME = "Unassigned";
 const UNTAGGED_KEY = "Untagged";
 
@@ -296,4 +305,37 @@ export function calculateRevenueByTag(
     totalRevenue: row.totalRevenue,
     taskCount: row.taskCount,
   }));
+}
+
+export function calculateSummaryMetrics(
+  tasks: Task[],
+  clients: Client[],
+  dateRangeMs: EarningsDateRangeMs,
+  billableFilter: BillableFilter,
+): SummaryMetrics {
+  const filtered = filterTasksForEarnings(tasks, dateRangeMs, billableFilter);
+  let billableRevenue = 0;
+  let billableTaskCount = 0;
+  let billableTimeSpentSec = 0;
+
+  for (const task of filtered) {
+    const revenue = getTaskBillableRevenue(task, clients);
+    if (task.isBillable) {
+      billableRevenue += revenue;
+      billableTaskCount += 1;
+      billableTimeSpentSec += task.timeSpent;
+    }
+  }
+
+  const billableHours = billableTimeSpentSec / 3600;
+  const averageHourlyRate = billableHours > 0 ? billableRevenue / billableHours : 0;
+
+  return {
+    totalRevenue: billableRevenue,
+    billableRevenue,
+    nonBillableRevenue: 0,
+    averageHourlyRate,
+    totalTaskCount: filtered.length,
+    billableTaskCount,
+  };
 }

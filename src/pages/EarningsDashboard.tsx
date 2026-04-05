@@ -1,13 +1,15 @@
-import React, { useEffect, useRef } from 'react';
-import { AppProvider } from '@/context/AppContext';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { AppProvider, useApp } from '@/context/AppContext';
 import { useLanguage } from '@/context/LanguageContext';
 import {
   EarningsDashboardStateProvider,
   useEarningsDashboardState,
 } from '@/context/EarningsDashboardStateContext';
 import type { ActiveChartView, BillableFilter, DateRangePreset } from '@/lib/earnings-dashboard-storage';
+import { calculateSummaryMetrics, resolveDateRangeMs } from '@/lib/earnings-calculations';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -17,12 +19,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+
 /**
  * Interim filter controls (Story 1.3): Epics 3–4 will replace the date/billable/chart UI.
  * Persistence in `earnings-dashboard-state` must remain when that swap happens.
  */
 const EarningsDashboardContent: React.FC = () => {
   const { t } = useLanguage();
+  const { state: appState } = useApp();
   const {
     state,
     setDateRangePreset,
@@ -31,6 +37,17 @@ const EarningsDashboardContent: React.FC = () => {
     clearAppData,
   } = useEarningsDashboardState();
   const titleBeforeRouteRef = useRef<string | null>(null);
+
+  const metrics = useMemo(
+    () =>
+      calculateSummaryMetrics(
+        appState.tasks,
+        appState.clients,
+        resolveDateRangeMs(state, Date.now()),
+        state.billableFilter,
+      ),
+    [appState.tasks, appState.clients, state],
+  );
 
   useEffect(() => {
     if (titleBeforeRouteRef.current === null) {
@@ -61,6 +78,64 @@ const EarningsDashboardContent: React.FC = () => {
           <p className="mt-4 text-muted-foreground max-w-2xl">
             {t.earningsDashboardPlaceholder}
           </p>
+        </div>
+
+        <div
+          data-testid="earnings-metrics"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
+        >
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t.earningsTotalRevenue}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-semibold">{formatCurrency(metrics.totalRevenue)}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t.earningsBillableRevenue}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-semibold">{formatCurrency(metrics.billableRevenue)}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t.earningsNonBillableRevenue}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-semibold">{formatCurrency(metrics.nonBillableRevenue)}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t.earningsAvgHourlyRate}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-semibold">{formatCurrency(metrics.averageHourlyRate)}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t.earningsTaskCount}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-semibold">
+                {metrics.totalTaskCount} {t.earningsTaskCountTotal} / {metrics.billableTaskCount} {t.earningsTaskCountBillable}
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="flex flex-col gap-6 max-w-xl">
