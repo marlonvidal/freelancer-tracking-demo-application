@@ -28,15 +28,10 @@ describe("EarningsDashboard", () => {
     expect(screen.getByTestId("earnings-dashboard")).toBeInTheDocument();
   });
 
-  it("[P1] shows English heading and placeholder from i18n", () => {
+  it("[P1] shows English heading from i18n", () => {
     renderEarningsRoute();
     expect(
       screen.getByRole("heading", { level: 1, name: "Earnings dashboard" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Charts and metrics will appear here in a later release.",
-      ),
     ).toBeInTheDocument();
   });
 
@@ -45,11 +40,6 @@ describe("EarningsDashboard", () => {
     renderEarningsRoute();
     expect(
       screen.getByRole("heading", { level: 1, name: "Painel de ganhos" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Gráficos e métricas aparecerão aqui em uma versão futura.",
-      ),
     ).toBeInTheDocument();
     expect(document.title).toBe("Ganhos — FreelanceFlow");
   });
@@ -192,5 +182,75 @@ describe("EarningsDashboard", () => {
     renderEarningsRoute();
     // 1 billable task: 1h × $80/hr = $80.00
     expect(screen.getAllByText("$80.00").length).toBeGreaterThanOrEqual(1);
+  });
+
+  // ── Story 3.1: Customer Revenue Chart ────────────────────────────────────────
+
+  it("[P0] renders customer-revenue-chart container in default activeChart=customer state (Story 3.1, AC1)", () => {
+    renderEarningsRoute();
+    expect(screen.getByTestId("customer-revenue-chart")).toBeInTheDocument();
+  });
+
+  it("[P1] does not render customer-revenue-chart when activeChart is 'project' (Story 3.1, AC7)", () => {
+    localStorage.setItem(
+      "earnings-dashboard-state",
+      JSON.stringify({
+        version: 1,
+        dateRangePreset: "all",
+        billableFilter: "all",
+        activeChart: "project",
+      }),
+    );
+    renderEarningsRoute();
+    expect(screen.queryByTestId("customer-revenue-chart")).not.toBeInTheDocument();
+  });
+
+  it("[P1] does not render customer-revenue-chart when activeChart is 'tag' (Story 3.1, AC7)", () => {
+    localStorage.setItem(
+      "earnings-dashboard-state",
+      JSON.stringify({
+        version: 1,
+        dateRangePreset: "all",
+        billableFilter: "all",
+        activeChart: "tag",
+      }),
+    );
+    renderEarningsRoute();
+    expect(screen.queryByTestId("customer-revenue-chart")).not.toBeInTheDocument();
+  });
+
+  it("[P1] customer chart shows no-data message when tasks are empty (Story 3.1, AC6)", () => {
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({ tasks: [], columns: [], clients: [], version: 1 }),
+    );
+    renderEarningsRoute();
+    expect(
+      screen.getByText("No data for this period", { exact: true }),
+    ).toBeInTheDocument();
+  });
+
+  it("[P1] renders chart section heading with seeded billable task (Story 3.1, AC1)", () => {
+    const now = Date.now();
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({
+        tasks: [
+          {
+            id: "t1", title: "Dev Task", columnId: "col-1", clientId: "c1",
+            isBillable: true, hourlyRate: 100, timeSpent: 3600, createdAt: now,
+            priority: "medium", description: "", timeEstimate: null,
+            dueDate: null, tags: [], order: 0,
+          },
+        ],
+        columns: [{ id: "col-1", title: "Todo", order: 0 }],
+        clients: [{ id: "c1", name: "Acme Corp", hourlyRate: 100, color: "#6366f1" }],
+        version: 1,
+      }),
+    );
+    renderEarningsRoute();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Revenue by Customer" }),
+    ).toBeInTheDocument();
   });
 });

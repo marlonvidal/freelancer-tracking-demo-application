@@ -6,7 +6,8 @@ import {
   useEarningsDashboardState,
 } from '@/context/EarningsDashboardStateContext';
 import type { ActiveChartView, BillableFilter, DateRangePreset } from '@/lib/earnings-dashboard-storage';
-import { calculateSummaryMetrics, resolveDateRangeMs } from '@/lib/earnings-calculations';
+import { calculateRevenueByCustomer, calculateSummaryMetrics, resolveDateRangeMs } from '@/lib/earnings-calculations';
+import CustomerRevenueChart from '@/components/CustomerRevenueChart';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,6 +50,17 @@ const EarningsDashboardContent: React.FC = () => {
     [appState.tasks, appState.clients, state],
   );
 
+  const customerData = useMemo(
+    () =>
+      calculateRevenueByCustomer(
+        appState.tasks,
+        appState.clients,
+        resolveDateRangeMs(state, Date.now()),
+        state.billableFilter,
+      ),
+    [appState.tasks, appState.clients, state],
+  );
+
   useEffect(() => {
     if (titleBeforeRouteRef.current === null) {
       titleBeforeRouteRef.current = document.title;
@@ -75,9 +87,6 @@ const EarningsDashboardContent: React.FC = () => {
           <h1 className="text-3xl font-semibold tracking-tight">
             {t.earningsDashboardHeading}
           </h1>
-          <p className="mt-4 text-muted-foreground max-w-2xl">
-            {t.earningsDashboardPlaceholder}
-          </p>
         </div>
 
         <div
@@ -137,6 +146,10 @@ const EarningsDashboardContent: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+
+        {state.activeChart === 'customer' && (
+          <CustomerRevenueChart data={customerData} />
+        )}
 
         <div className="flex flex-col gap-6 max-w-xl">
           <div className="space-y-2">

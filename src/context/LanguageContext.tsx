@@ -102,6 +102,8 @@ interface Translations {
   earningsTaskCount: string;
   earningsTaskCountTotal: string;
   earningsTaskCountBillable: string;
+  earningsCustomerChartTitle: string;
+  earningsChartNoData: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -186,6 +188,8 @@ export const translations: Record<Language, Translations> = {
     earningsTaskCount: 'Task Count',
     earningsTaskCountTotal: 'total',
     earningsTaskCountBillable: 'billable',
+    earningsCustomerChartTitle: 'Revenue by Customer',
+    earningsChartNoData: 'No data for this period',
   },
   pt: {
     totalRevenue: 'Receita Total',
@@ -268,6 +272,8 @@ export const translations: Record<Language, Translations> = {
     earningsTaskCount: 'Total de Tarefas',
     earningsTaskCountTotal: 'total',
     earningsTaskCountBillable: 'faturável',
+    earningsCustomerChartTitle: 'Receita por Cliente',
+    earningsChartNoData: 'Sem dados para este período',
   },
 };
 
