@@ -253,4 +253,92 @@ describe("EarningsDashboard", () => {
       screen.getByRole("heading", { level: 2, name: "Revenue by Customer" }),
     ).toBeInTheDocument();
   });
+
+  // ── Story 3.2: Project Revenue Chart ─────────────────────────────────────────
+
+  it("[P0] renders project-revenue-chart container when activeChart is 'project' (Story 3.2, AC1)", () => {
+    localStorage.setItem(
+      "earnings-dashboard-state",
+      JSON.stringify({
+        version: 1,
+        dateRangePreset: "all",
+        billableFilter: "all",
+        activeChart: "project",
+      }),
+    );
+    renderEarningsRoute();
+    expect(screen.getByTestId("project-revenue-chart")).toBeInTheDocument();
+  });
+
+  it("[P1] does not render project-revenue-chart when activeChart is 'customer' (default) (Story 3.2, AC2)", () => {
+    renderEarningsRoute();
+    expect(screen.queryByTestId("project-revenue-chart")).not.toBeInTheDocument();
+  });
+
+  it("[P1] does not render project-revenue-chart when activeChart is 'tag' (Story 3.2, AC2)", () => {
+    localStorage.setItem(
+      "earnings-dashboard-state",
+      JSON.stringify({
+        version: 1,
+        dateRangePreset: "all",
+        billableFilter: "all",
+        activeChart: "tag",
+      }),
+    );
+    renderEarningsRoute();
+    expect(screen.queryByTestId("project-revenue-chart")).not.toBeInTheDocument();
+  });
+
+  it("[P1] project chart shows no-data message when tasks are empty and activeChart is 'project' (Story 3.2, AC6)", () => {
+    localStorage.setItem(
+      "earnings-dashboard-state",
+      JSON.stringify({
+        version: 1,
+        dateRangePreset: "all",
+        billableFilter: "all",
+        activeChart: "project",
+      }),
+    );
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({ tasks: [], columns: [], clients: [], version: 1 }),
+    );
+    renderEarningsRoute();
+    expect(
+      screen.getByText("No data for this period", { exact: true }),
+    ).toBeInTheDocument();
+  });
+
+  it("[P1] renders project chart heading 'Revenue by Project' with seeded task and activeChart is 'project' (Story 3.2, AC1)", () => {
+    const now = Date.now();
+    localStorage.setItem(
+      "earnings-dashboard-state",
+      JSON.stringify({
+        version: 1,
+        dateRangePreset: "all",
+        billableFilter: "all",
+        activeChart: "project",
+      }),
+    );
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({
+        tasks: [
+          {
+            id: "t1", title: "Dev Task", columnId: "col-1", clientId: "c1",
+            isBillable: true, hourlyRate: 100, timeSpent: 3600, createdAt: now,
+            priority: "medium", description: "", timeEstimate: null,
+            dueDate: null, tags: [], order: 0,
+          },
+        ],
+        columns: [{ id: "col-1", title: "Discovery", order: 0 }],
+        clients: [{ id: "c1", name: "Acme Corp", hourlyRate: 100, color: "#6366f1" }],
+        version: 1,
+      }),
+    );
+    renderEarningsRoute();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Revenue by Project" }),
+    ).toBeInTheDocument();
+  });
 });
