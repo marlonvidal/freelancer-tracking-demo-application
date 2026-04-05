@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { AppState, Task, Column, Client, TimeEntry, ActiveTimer, Priority } from '@/types';
+import {
+  getEffectiveHourlyRate,
+  getTaskBillableRevenue,
+} from '@/lib/earnings-calculations';
 import { loadState, saveState } from '@/lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -227,18 +231,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return state.clients.find(c => c.id === id);
   }, [state.clients]);
 
-  const getTaskRate = useCallback((task: Task): number => {
-    if (task.hourlyRate) return task.hourlyRate;
-    const client = getClient(task.clientId);
-    return client?.hourlyRate || 0;
-  }, [getClient]);
+  const getTaskRate = useCallback(
+    (task: Task): number => getEffectiveHourlyRate(task, state.clients),
+    [state.clients],
+  );
 
-  const getTaskRevenue = useCallback((task: Task): number => {
-    if (!task.isBillable) return 0;
-    const rate = getTaskRate(task);
-    const hours = task.timeSpent / 3600;
-    return rate * hours;
-  }, [getTaskRate]);
+  const getTaskRevenue = useCallback(
+    (task: Task): number => getTaskBillableRevenue(task, state.clients),
+    [state.clients],
+  );
 
   const getTotalRevenue = useCallback((): number => {
     return state.tasks.reduce((sum, task) => sum + getTaskRevenue(task), 0);

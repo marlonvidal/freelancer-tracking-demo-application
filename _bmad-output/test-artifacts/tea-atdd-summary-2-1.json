@@ -1,0 +1,16 @@
+{
+  "storyId": "2-1",
+  "tdd_phase": "RED",
+  "total_tests": 19,
+  "api_tests": 10,
+  "e2e_tests": 9,
+  "all_tests_skipped": true,
+  "expected_to_fail": true,
+  "fixtures_created": 0,
+  "subagent_execution": "SEQUENTIAL (API → E2E, single agent)",
+  "test_files": [
+    "tests/api/story-2-1-earnings-calculations-atdd.spec.ts",
+    "tests/e2e/story-2-1-earnings-calculations-atdd.spec.ts"
+  ],
+  "checklist_path": "_bmad-output/test-artifacts/atdd-checklist-2-1.md"
+}
