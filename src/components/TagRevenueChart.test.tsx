@@ -164,6 +164,92 @@ describe("TagRevenueChart", () => {
     });
   });
 
+  // ── Story 7.1 — Accessibility (WCAG 2.1 AA) ──────────────────────────────────
+
+  describe("Story 7.1 — sr-only data summary (AC1/AC4/FR34/NFR-A1/NFR-A5)", () => {
+    it("[P0] h2 heading has id='tag-chart-heading' for aria-labelledby", () => {
+      renderChart([singleRow]);
+      const heading = screen.getByRole("heading", { level: 2, name: "Revenue by Tag" });
+      expect(heading).toHaveAttribute("id", "tag-chart-heading");
+    });
+
+    it("[P0] sr-only list is attached to the DOM when data is provided", () => {
+      const { container } = renderChart([singleRow]);
+      const srList = container.querySelector("ul.sr-only");
+      expect(srList).toBeInTheDocument();
+    });
+
+    it("[P0] sr-only list has aria-labelledby pointing to chart heading (AC1/FR34)", () => {
+      const { container } = renderChart([singleRow]);
+      const srList = container.querySelector("ul.sr-only");
+      expect(srList).toHaveAttribute("aria-labelledby", "tag-chart-heading");
+    });
+
+    it("[P0] sr-only list renders one item per data row (AC1/AC4/NFR-A5)", () => {
+      const { container } = renderChart(multipleRows);
+      const items = container.querySelectorAll("ul.sr-only li");
+      expect(items).toHaveLength(3);
+    });
+
+    it("[P1] sr-only list item contains tag name, currency value, and percentage (AC1/AC4)", () => {
+      const { container } = renderChart([singleRow]);
+      const items = container.querySelectorAll("ul.sr-only li");
+      expect(items[0].textContent).toContain("design");
+      expect(items[0].textContent).toContain("$100.00");
+      expect(items[0].textContent).toContain("100.0%");
+    });
+
+    it("[P1] all tags appear in sr-only list for multi-row data (AC4/NFR-A5)", () => {
+      const { container } = renderChart(multipleRows);
+      const listText = container.querySelector("ul.sr-only")?.textContent ?? "";
+      expect(listText).toContain("design");
+      expect(listText).toContain("development");
+      expect(listText).toContain("consulting");
+    });
+
+    it("[P1] sr-only list percentages are correct for multi-row data (total=410)", () => {
+      const { container } = renderChart(multipleRows);
+      const items = container.querySelectorAll("ul.sr-only li");
+      // design: 200/410 = 48.8%, development: 160/410 = 39.0%, consulting: 50/410 = 12.2%
+      expect(items[0].textContent).toContain("48.8%");
+      expect(items[1].textContent).toContain("39.0%");
+      expect(items[2].textContent).toContain("12.2%");
+    });
+
+    it('[P1] "Untagged" sentinel appears in sr-only list (AC4 — tasks with no tags)', () => {
+      const { container } = renderChart([untaggedRow]);
+      const listText = container.querySelector("ul.sr-only")?.textContent ?? "";
+      expect(listText).toContain("Untagged");
+    });
+
+    it("[P2] sr-only list percentage shows '0.0%' when total revenue is 0 (edge case)", () => {
+      const { container } = renderChart([
+        { tag: "design", totalRevenue: 0, taskCount: 0 },
+      ]);
+      const items = container.querySelectorAll("ul.sr-only li");
+      expect(items[0].textContent).toContain("0.0%");
+    });
+
+    it("[P0] sr-only list is NOT present in the no-data empty state (data.length === 0)", () => {
+      const { container } = renderChart([]);
+      const srList = container.querySelector("ul.sr-only");
+      expect(srList).not.toBeInTheDocument();
+    });
+
+    it("[P1] visual chart wrapper has aria-hidden='true' (AC4/NFR-A5 — redundant for screen readers)", () => {
+      const { container } = renderChart([singleRow]);
+      const ariaHiddenDiv = container.querySelector("[aria-hidden='true']");
+      expect(ariaHiddenDiv).toBeInTheDocument();
+    });
+
+    it("[P2] sr-only list items use pt-BR currency format when language=pt (AC1/i18n)", () => {
+      localStorage.setItem("app-language", "pt");
+      const { container } = renderChart([singleRow]);
+      const items = container.querySelectorAll("ul.sr-only li");
+      expect(items[0].textContent).toMatch(/,\d{2}/);
+    });
+  });
+
   // ── Story 4.4 — all-hidden guard (AC3) ───────────────────────────────────────
   // Verifies the new visibleData.length === 0 guard does not falsely trigger.
   // The interaction that produces the hidden state (clicking legend items) is

@@ -148,6 +148,86 @@ describe("ProjectRevenueChart", () => {
     });
   });
 
+  // ── Story 7.1 — Accessibility (WCAG 2.1 AA) ──────────────────────────────────
+
+  describe("Story 7.1 — sr-only data summary (AC1/AC4/FR34/NFR-A1/NFR-A5)", () => {
+    it("[P0] h2 heading has id='project-chart-heading' for aria-labelledby", () => {
+      renderChart([singleRow]);
+      const heading = screen.getByRole("heading", { level: 2, name: "Revenue by Project" });
+      expect(heading).toHaveAttribute("id", "project-chart-heading");
+    });
+
+    it("[P0] sr-only list is attached to the DOM when data is provided", () => {
+      const { container } = renderChart([singleRow]);
+      const srList = container.querySelector("ul.sr-only");
+      expect(srList).toBeInTheDocument();
+    });
+
+    it("[P0] sr-only list has aria-labelledby pointing to chart heading (AC1/FR34)", () => {
+      const { container } = renderChart([singleRow]);
+      const srList = container.querySelector("ul.sr-only");
+      expect(srList).toHaveAttribute("aria-labelledby", "project-chart-heading");
+    });
+
+    it("[P0] sr-only list renders one item per data row (AC1/AC4/NFR-A5)", () => {
+      const { container } = renderChart(multipleRows);
+      const items = container.querySelectorAll("ul.sr-only li");
+      expect(items).toHaveLength(3);
+    });
+
+    it("[P1] sr-only list item contains project name, currency value, and percentage (AC1/AC4)", () => {
+      const { container } = renderChart([singleRow]);
+      const items = container.querySelectorAll("ul.sr-only li");
+      expect(items[0].textContent).toContain("Discovery");
+      expect(items[0].textContent).toContain("$100.00");
+      expect(items[0].textContent).toContain("100.0%");
+    });
+
+    it("[P1] all projects appear in sr-only list for multi-row data (AC4/NFR-A5)", () => {
+      const { container } = renderChart(multipleRows);
+      const listText = container.querySelector("ul.sr-only")?.textContent ?? "";
+      expect(listText).toContain("Discovery");
+      expect(listText).toContain("Development");
+      expect(listText).toContain("Design");
+    });
+
+    it("[P1] sr-only list percentages are correct for multi-row data (total=350)", () => {
+      const { container } = renderChart(multipleRows);
+      const items = container.querySelectorAll("ul.sr-only li");
+      // Discovery: 200/350 = 57.1%, Development: 100/350 = 28.6%, Design: 50/350 = 14.3%
+      expect(items[0].textContent).toContain("57.1%");
+      expect(items[1].textContent).toContain("28.6%");
+      expect(items[2].textContent).toContain("14.3%");
+    });
+
+    it("[P2] sr-only list percentage shows '0.0%' when total revenue is 0 (edge case)", () => {
+      const { container } = renderChart([
+        { columnId: "col-1", columnTitle: "Discovery", totalRevenue: 0, taskCount: 0 },
+      ]);
+      const items = container.querySelectorAll("ul.sr-only li");
+      expect(items[0].textContent).toContain("0.0%");
+    });
+
+    it("[P0] sr-only list is NOT present in the no-data empty state (data.length === 0)", () => {
+      const { container } = renderChart([]);
+      const srList = container.querySelector("ul.sr-only");
+      expect(srList).not.toBeInTheDocument();
+    });
+
+    it("[P1] visual chart wrapper has aria-hidden='true' (AC4/NFR-A5 — redundant for screen readers)", () => {
+      const { container } = renderChart([singleRow]);
+      const ariaHiddenDiv = container.querySelector("[aria-hidden='true']");
+      expect(ariaHiddenDiv).toBeInTheDocument();
+    });
+
+    it("[P2] sr-only list items use pt-BR currency format when language=pt (AC1/i18n)", () => {
+      localStorage.setItem("app-language", "pt");
+      const { container } = renderChart([singleRow]);
+      const items = container.querySelectorAll("ul.sr-only li");
+      expect(items[0].textContent).toMatch(/,\d{2}/);
+    });
+  });
+
   // ── Story 4.4 — all-hidden guard (AC3) ───────────────────────────────────────
   // Verifies the new visibleData.length === 0 guard does not falsely trigger.
   // The interaction that produces the hidden state (clicking legend items) is

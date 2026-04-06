@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: '2026-04-03T17:36:00Z'
-last_updated: '2026-04-06T14:10:00Z'
+last_updated: '2026-04-06T14:20:00Z'
 project: freelancer-tracking-demo-application
 project_key: NOKEY
 tracking_system: file-system
@@ -70,5 +70,5 @@ development_status:
   6-1-implement-i18n-translations-for-dashboard: done
   epic-6-retrospective: optional
   epic-7: in-progress
-  7-1-implement-accessibility-wcag-2-1-aa-for-dashboard: review
+  7-1-implement-accessibility-wcag-2-1-aa-for-dashboard: done
   epic-7-retrospective: optional

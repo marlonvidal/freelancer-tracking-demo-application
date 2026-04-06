@@ -1,194 +1,190 @@
 ---
-stepsCompleted: ['step-01-preflight-and-context', 'step-02-identify-targets', 'step-03-generate-tests', 'step-03c-aggregate', 'step-04-validate-and-summarize']
+stepsCompleted: ['step-01-preflight-and-context', 'step-02-identify-targets', 'step-03-generate-tests', 'step-04-validate-and-summarize']
 lastStep: 'step-04-validate-and-summarize'
 lastSaved: '2026-04-06'
-story: '6-1-implement-i18n-translations-for-dashboard'
+workflow: bmad-testarch-automate
+story: '7-1-implement-accessibility-wcag-2-1-aa-for-dashboard'
 inputDocuments:
-  - _bmad-output/implementation-artifacts/6-1-implement-i18n-translations-for-dashboard.md
-  - src/lib/utils.ts
-  - src/lib/utils.test.ts
-  - src/components/DateRangeFilter.tsx
-  - src/components/DateRangeFilter.test.tsx
+  - _bmad-output/implementation-artifacts/7-1-implement-accessibility-wcag-2-1-aa-for-dashboard.md
+  - src/components/CustomerRevenueChart.tsx
+  - src/components/ProjectRevenueChart.tsx
+  - src/components/TagRevenueChart.tsx
+  - src/components/Header.tsx
   - src/pages/EarningsDashboard.tsx
-  - src/pages/EarningsDashboard.test.tsx
-  - tests/e2e/story-6-1-implement-i18n-translations-for-dashboard-atdd.spec.ts
+  - src/context/LanguageContext.tsx
+  - tests/e2e/story-7-1-implement-accessibility-wcag-2-1-aa-for-dashboard-atdd.spec.ts
 ---
 
-# Test Automation Expansion — Story 6.1: i18n Translations for Dashboard
+# Automation Summary — Story 7.1: WCAG 2.1 AA Accessibility for Dashboard
 
-**Generated:** 2026-04-06  
-**Story:** `6-1-implement-i18n-translations-for-dashboard`  
-**Mode:** BMad-Integrated · Sequential  
-**Stack:** frontend (Vitest + Playwright)
+**Date:** 2026-04-06
+**Story:** `7-1-implement-accessibility-wcag-2-1-aa-for-dashboard`
+**Workflow Mode:** Create (sequential)
+**Detected Stack:** Frontend (React + Vitest + Playwright)
 
 ---
 
 ## Step 1: Preflight & Context
 
-### Framework Verification
+**Framework:** Verified — `playwright.config.ts` + `vitest.config.ts` present. Playwright projects: `chromium` (E2E) + `atdd-api` (API/unit logic). Vitest includes all `src/**/*.{test,spec}.{ts,tsx}`.
 
-| Tool | Config | Status |
-|------|--------|--------|
-| Vitest (unit) | `vite.config.ts` | ✅ Operational |
-| Playwright (E2E) | `playwright.config.ts` | ✅ Operational |
-| @testing-library/react | `package.json` | ✅ Operational |
+**Execution Mode:** BMad-Integrated — story file provided with full AC mapping.
 
-**Detected stack:** `frontend`  
-**Execution mode:** `sequential`
+**TEA Config Flags:** Standard frontend profile. No `tea_use_playwright_utils`, no `tea_use_pactjs_utils`, no Pact MCP.
 
-### Baseline (pre-automation)
-
-| Suite | Count | Status |
-|-------|-------|--------|
-| Vitest unit tests | 254 | All passing |
-| Playwright E2E tests | 147 | All passing |
+**Baseline (pre-story-7.1):**
+- Vitest unit tests: **264 passing** (15 test files)
+- Playwright E2E tests: **157 passing** (chromium + atdd-api projects)
 
 ---
 
 ## Step 2: Identify Automation Targets
 
-### Story 6.1 — Implementation Scope
+### Story 7.1 Changes (files modified)
 
-Files modified by the story:
-- `src/lib/utils.ts` — `formatCurrency(value, language?)` optional locale param
-- `src/components/DateRangeFilter.tsx` — `formatDisplayRange` locale-aware date format
-- `src/components/CustomerRevenueChart.tsx` — passes `language` to `formatCurrency` in tooltip
-- `src/components/ProjectRevenueChart.tsx` — same pattern
-- `src/components/TagRevenueChart.tsx` — same pattern
-- `src/pages/EarningsDashboard.tsx` — metric cards pass `language` to `formatCurrency`
-- `src/components/Header.tsx` — `aria-label="Globe"` added to language toggle button
-- `tests/e2e/story-6-1-...-atdd.spec.ts` — ATDD acceptance spec (6 tests)
+| File | Change |
+|------|--------|
+| `src/context/LanguageContext.tsx` | +2 translation keys: `languageToggleLabel`, `earningsChartSrDataSummary` |
+| `src/components/Header.tsx` | Globe button `aria-label` now uses `t.languageToggleLabel` (locale-aware) |
+| `src/components/CustomerRevenueChart.tsx` | Added sr-only `<ul>` data summary, `id` on `<h2>`, `aria-hidden` wrapper on visual chart |
+| `src/components/ProjectRevenueChart.tsx` | Same pattern as CustomerRevenueChart |
+| `src/components/TagRevenueChart.tsx` | Same pattern as CustomerRevenueChart |
+| `src/pages/EarningsDashboard.tsx` | Added `role="status"` to 3 empty states, `role="alert"` to error state, `aria-live="polite"` to metrics grid |
+| `tests/e2e/story-7-1-...-atdd.spec.ts` | ATDD spec (already existed from implementation phase) |
 
-### Coverage Gap Analysis
+### Existing ATDD E2E Coverage (already passing — not rewritten)
 
-| Feature | AC | Gap | Priority |
-|---|---|---|---|
-| `formatCurrency(v, 'pt')` → pt-BR format | AC4/FR31 | Not unit-tested | P0 |
-| `formatCurrency(v, 'en')` explicit | AC4/FR31 | Not unit-tested | P1 |
-| `formatCurrency(v)` backward compat guarantee | AC4/FR31 | Only implicitly tested | P2 |
-| `DateRangeFilter` EN date format "MMM d, yyyy" (precise) | AC3/FR30 | Only year checked | P1 |
-| `DateRangeFilter` PT date format "DD/MM/YYYY" | AC3/FR30 | Only E2E; no component test | P1 |
-| EarningsDashboard metric cards pt-BR currency value | AC4/FR31 | Labels tested, values not | P1 |
-| Chart tooltip currency format (via component render) | AC4/FR31 | E2E + chart library complexity | Deferred to E2E |
+The `story-7-1-implement-accessibility-wcag-2-1-aa-for-dashboard-atdd.spec.ts` file covers all P0/P1 acceptance criteria at E2E level:
+- Chart heading + sr-only data summary present (AC1/FR34)
+- All three chart headings render in translated text (AC1/FR34)
+- Empty state `role="status"` (AC1/NFR-A1)
+- Calculation error `role="alert"` (AC1/NFR-A1)
+- Globe button locale-aware `aria-label` (AC1/NFR-A1)
+- Page structure: `<main>` + `<h1>` (AC2/FR33)
+- Chart view Select reachable via keyboard (AC2/FR33/NFR-A7)
+- Sr-only list as text alternative for color-coded data (AC4/FR36/NFR-A5)
+- Date range picker accessible label (AC6/FR38/NFR-A6)
 
-### Test Levels Selected
+### Coverage Gaps Identified (unit test level)
 
-| Level | Rationale |
-|-------|-----------|
-| **Unit** | `formatCurrency` is pure — ideal for unit tests covering EN/PT locale output, edge cases, backward compat |
-| **Component** | `DateRangeFilter` already has a component test file; date format logic (FR30) is best tested at component level |
-| **Integration** | `EarningsDashboard` test exercises full locale path including `useLanguage()` context and metric cards |
-| **E2E (existing)** | ATDD spec already covers all 6 ACs; chart tooltip currency testing is best left to E2E |
+The existing unit tests for Story 7.1 components lacked **all accessibility attribute assertions**. Gaps identified:
+
+**CustomerRevenueChart.test.tsx (missing):**
+- `id="customer-chart-heading"` on h2
+- sr-only `<ul>` present in DOM with data
+- `aria-labelledby="customer-chart-heading"` on sr-only list
+- Item count matches data length
+- Items contain name, currency, and percentage
+- Correct percentage calculations
+- All customers in multi-row list
+- sr-only list absent in no-data state
+- `aria-hidden="true"` on visual chart wrapper
+- pt-BR currency format in Portuguese locale
+
+**ProjectRevenueChart.test.tsx:** Same gaps as CustomerRevenueChart.
+
+**TagRevenueChart.test.tsx:** Same gaps + "Untagged" sentinel handling.
+
+**Header.test.tsx (missing):**
+- Globe button `aria-label="Language"` (EN)
+- Globe button `aria-label="Idioma"` (PT)
+- Old hardcoded `aria-label="Globe"` no longer present
+
+**EarningsDashboard.test.tsx (missing):**
+- `role="status"` on `earnings-empty-no-tasks`
+- `role="status"` on `earnings-empty-no-period-data`
+- `role="status"` on `earnings-empty-no-billable-work`
+- `role="alert"` on `earnings-calculation-error`
+- `aria-live="polite"` on `earnings-metrics` grid
 
 ---
 
 ## Step 3: Test Generation
 
-### Execution Mode
+**Execution Mode:** Sequential (single agent in Cursor IDE context)
 
-```
-⚙️ Execution Mode Resolution:
-- Requested: sequential
-- Probe Enabled: false
-- Resolved: sequential
-```
+**Subagent dispatch:**
+- Worker A (API/unit): executed inline — Vitest unit tests generated
+- Worker B (E2E): ATDD spec already exists — verified passing, not regenerated
+- Worker B-backend: N/A (frontend stack)
 
 ### Tests Generated
 
-#### `src/lib/utils.test.ts` — New describe block added
-
-**`Story 6.1 — formatCurrency locale-aware (AC4/FR31)`** — 7 new unit tests:
-
-| Test | Priority | AC |
-|------|----------|----|
-| `formatCurrency('pt')` produces pt-BR format (1.234,56 pattern) | P0 | FR31 |
-| `formatCurrency('pt')` uses USD currency marker (US$) | P0 | FR31 |
-| `formatCurrency('en')` produces same output as en-US default | P1 | FR31 |
-| `formatCurrency('pt')` formats zero with comma decimal | P1 | FR31 |
-| `formatCurrency('pt')` formats negative amounts | P1 | FR31 |
-| `formatCurrency()` no-param still defaults to en-US (backward compat) | P2 | FR31 |
-| `formatCurrency('pt')` large amounts use period as thousands separator | P2 | FR31 |
-
-#### `src/components/DateRangeFilter.test.tsx` — 2 new tests added
-
-| Test | Section | Priority | AC |
-|------|---------|----------|----|
-| Trigger shows "MMM d, yyyy" format in English with custom dateRange | popover trigger display text | P1 | FR30 |
-| Trigger shows "DD/MM/YYYY" format when language=pt and custom dateRange | Portuguese i18n | P1 | FR30 |
-
-#### `src/pages/EarningsDashboard.test.tsx` — 1 new integration test added
-
-| Test | Priority | AC |
-|------|----------|----|
-| Metric cards display pt-BR currency format when language=pt | P1 | FR31 |
+42 new unit tests added across 5 test files.
 
 ---
 
-## Step 4: Validation
-
-### Checklist
-
-- [x] Framework readiness verified (Vitest + Playwright operational)
-- [x] Coverage mapped to story ACs (AC3/FR30, AC4/FR31)
-- [x] Test quality: pure logic assertions, no flaky selectors
-- [x] Fixtures: reuse existing `seedState()` and `localStorage.setItem()` patterns
-- [x] No existing tests broken
-- [x] No tests added for code outside story scope
-- [x] `DateRangeFilter.test.tsx` PT date format test uses `localStorage.setItem('app-language', 'pt')` in `beforeEach` (existing pattern in the file)
-- [x] `utils.test.ts` uses dynamic import pattern (matches existing test style in that file)
-- [x] Temp artifacts not created (sequential mode, no subagent temp files)
-- [x] All 264 unit tests passing
-- [x] All 147 E2E tests passing (including all 6 Story 6.1 ATDD)
-
----
-
-## Summary
+## Step 4: Validate & Summarize
 
 ### Test Files Created or Modified
 
-| File | Action | Tests Added |
-|------|--------|-------------|
-| `src/lib/utils.test.ts` | Modified | +7 unit tests (Story 6.1 `formatCurrency` locale-aware) |
-| `src/components/DateRangeFilter.test.tsx` | Modified | +2 component tests (FR30 date format in EN + PT) |
-| `src/pages/EarningsDashboard.test.tsx` | Modified | +1 integration test (FR31 pt-BR currency in metric cards) |
+| Action | File |
+|--------|------|
+| Modified | `src/components/CustomerRevenueChart.test.tsx` |
+| Modified | `src/components/ProjectRevenueChart.test.tsx` |
+| Modified | `src/components/TagRevenueChart.test.tsx` |
+| Modified | `src/components/Header.test.tsx` |
+| Modified | `src/pages/EarningsDashboard.test.tsx` |
+| Created | `_bmad-output/test-artifacts/automation-summary.md` |
 
-**Total new tests: 10**
+**No E2E test files were modified** — the existing ATDD spec was verified as fully passing.
 
-### Coverage Improvements
+### Coverage Improvements (areas now covered that were not before)
 
-| Area | Before | After |
-|------|--------|-------|
-| `formatCurrency` with `language='pt'` (pt-BR Intl output) | Not covered | ✅ Covered (P0 unit tests) |
-| `formatCurrency` with `language='en'` (explicit EN param) | Not covered | ✅ Covered (P1 unit test) |
-| `formatCurrency` backward compat guarantee (no-param → en-US) | Implicit | ✅ Explicit regression guard |
-| `DateRangeFilter` trigger — EN date format "MMM d, yyyy" (precise) | Year-only check | ✅ Full format assertion |
-| `DateRangeFilter` trigger — PT date format "DD/MM/YYYY" | E2E only | ✅ Component-level coverage added |
-| `EarningsDashboard` metric cards — pt-BR currency value | Labels only | ✅ Currency format value asserted |
+| Area | AC | Newly Covered |
+|------|----|---------------|
+| sr-only `<ul>` in DOM with data | AC1/FR34/NFR-A1 | CustomerRevenueChart, ProjectRevenueChart, TagRevenueChart |
+| `aria-labelledby` on sr-only list | AC1/FR34 | All three chart components |
+| `id` attribute on chart `<h2>` headings | AC1/FR34 | All three chart components |
+| Item count matches data length | AC4/NFR-A5 | All three chart components |
+| Items contain name, currency, percentage | AC1/AC4 | All three chart components |
+| Percentage calculation correctness | AC4 | All three chart components |
+| Total=0 edge case: "0.0%" shown | AC4 | All three chart components |
+| sr-only list absent in no-data state | AC1 | All three chart components |
+| `aria-hidden="true"` on visual chart | AC4/NFR-A5 | All three chart components |
+| pt-BR currency format in sr-only items | AC1/i18n | All three chart components |
+| "Untagged" sentinel in TagRevenueChart sr-only list | AC4 | TagRevenueChart |
+| Globe button `aria-label="Language"` (EN) | AC1/NFR-A1 | Header |
+| Globe button `aria-label="Idioma"` (PT) | AC1/NFR-A1 | Header |
+| Old `aria-label="Globe"` no longer present | AC1 fix | Header |
+| `role="status"` on `earnings-empty-no-tasks` | AC1/NFR-A1 | EarningsDashboard |
+| `role="status"` on `earnings-empty-no-period-data` | AC1/NFR-A1 | EarningsDashboard |
+| `role="status"` on `earnings-empty-no-billable-work` | AC1/NFR-A1 | EarningsDashboard |
+| `role="alert"` on `earnings-calculation-error` | AC1/NFR-A1 | EarningsDashboard |
+| `aria-live="polite"` on `earnings-metrics` grid | AC1/NFR-A1 | EarningsDashboard |
+
+### New Test Distribution by Priority
+
+| Priority | Count | Rationale |
+|----------|-------|-----------|
+| P0 | 20 | Critical ARIA attributes — role/aria-live/aria-label/sr-only presence |
+| P1 | 15 | Content correctness — item data, percentages, multi-row coverage |
+| P2 | 7 | Edge cases — total=0, pt-BR format, 12.2% rounding |
+| **Total** | **42** | |
 
 ### Final Test Suite Results
 
-| Suite | Before | After | Delta | Status |
-|-------|--------|-------|-------|--------|
-| Vitest unit tests | 254 passed | **264 passed** | +10 | ✅ All pass |
-| Playwright E2E tests | 147 passed | **147 passed** | 0 | ✅ All pass |
-| **Total** | **401** | **411** | **+10** | ✅ |
+| Suite | Before | After | Delta |
+|-------|--------|-------|-------|
+| Vitest unit tests | 264 passing | **306 passing** | +42 |
+| Playwright E2E (chromium + atdd-api) | 157 passing | **157 passing** | 0 |
+| **Total** | **421** | **463** | **+42** |
 
-### Priority Coverage (new tests)
+**All tests pass. No regressions.**
 
-| Priority | Count |
-|----------|-------|
-| P0 (Critical) | 2 |
-| P1 (High) | 6 |
-| P2 (Medium) | 2 |
-| **Total** | **10** |
+---
 
-### Assumptions & Notes
+## Key Assumptions & Notes
 
-- Chart tooltip currency format (CustomerRevenueChart, ProjectRevenueChart, TagRevenueChart) is covered by the existing Story 6.1 E2E ATDD tests. Component-level isolation of tooltip rendering requires complex Recharts mock setup and adds marginal value given E2E coverage — deferred per story scope constraint.
-- `DateRangeFilter.test.tsx` PT date format test inherits `localStorage.setItem('app-language', 'pt')` from the `beforeEach` in the Portuguese i18n describe block — no additional setup required.
-- pt-BR currency assertions use `toContain` and `toMatch(/US\$|USD/)` rather than exact equality to accommodate minor ICU data differences across Node.js versions.
+- sr-only `<ul>` is rendered for all `data.length > 0` cases, even when `visibleData.length === 0` (all-hidden state) — this is a reviewed+deferred spec deviation; implementation is arguably more accessible than the spec required
+- `aria-label` on the sr-only `<ul>` is technically dead code (aria-labelledby takes ARIA precedence) — deferred as pre-existing spec design; both attributes are present in implementation
+- Contrast verification (FR37/NFR-A3) is a manual/axe check — not automatable at unit level; shadcn/ui defaults expected to pass WCAG AA
+- The `earnings-calculation-error` path requires `vi.spyOn` to trigger since `loadState()` catches corrupt JSON and returns defaults
 
-### Next Recommended Workflow
+---
 
-- `bmad-testarch-test-review` — Review the new test quality against best-practice checklist
-- `bmad-testarch-trace` — Generate traceability matrix mapping ACs to test IDs
+## Next Recommended Workflow
+
+- `bmad-testarch-test-review` — Validate test quality against BMAD QA standards
+- `bmad-testarch-trace` — Generate traceability matrix linking ACs to test IDs
+- `bmad-sprint-status` — Update sprint tracking to reflect Story 7.1 complete with full test coverage

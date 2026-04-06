@@ -109,6 +109,26 @@ describe("Header — Story 1.2 navigation", () => {
     expect(onAddTask).toHaveBeenCalledOnce();
   });
 
+  // ── Story 7.1 — Accessibility (WCAG 2.1 AA) ──────────────────────────────────
+
+  it("[P0] Globe button aria-label is locale-aware 'Language' in English (AC1/NFR-A1)", () => {
+    renderHeader();
+    const globeBtn = screen.getByRole("button", { name: "Language" });
+    expect(globeBtn).toBeInTheDocument();
+  });
+
+  it("[P0] Globe button aria-label changes to 'Idioma' when language is Portuguese (AC1/NFR-A1)", () => {
+    localStorage.setItem("app-language", "pt");
+    renderHeader();
+    const globeBtn = screen.getByRole("button", { name: "Idioma" });
+    expect(globeBtn).toBeInTheDocument();
+  });
+
+  it("[P1] Globe button aria-label is NOT the old hardcoded 'Globe' value (Story 7.1 fix)", () => {
+    renderHeader();
+    expect(screen.queryByRole("button", { name: "Globe" })).not.toBeInTheDocument();
+  });
+
   it("[P0] Board link points to /", () => {
     renderHeader();
     const boardLink = screen.getByRole("link", { name: /board/i });

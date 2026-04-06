@@ -474,6 +474,86 @@ describe("EarningsDashboard", () => {
     ).toBeInTheDocument();
   });
 
+  // ── Story 7.1 — Accessibility (WCAG 2.1 AA): ARIA role attributes ────────────
+
+  it("[P0] earnings-empty-no-tasks state has role='status' for screen reader announcement (AC1/NFR-A1)", () => {
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({ tasks: [], columns: [], clients: [], version: 1 }),
+    );
+    renderEarningsRoute();
+    const emptyState = screen.getByTestId("earnings-empty-no-tasks");
+    expect(emptyState).toHaveAttribute("role", "status");
+  });
+
+  it("[P0] earnings-empty-no-period-data state has role='status' for screen reader announcement (AC1/NFR-A1)", () => {
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({
+        tasks: [
+          {
+            id: "t1", title: "Old Task", columnId: "col-1", clientId: null,
+            isBillable: true, hourlyRate: 100, timeSpent: 3600,
+            createdAt: Date.now() - 60 * 86400000,
+            priority: "medium", description: "", timeEstimate: null,
+            dueDate: null, tags: [], order: 0,
+          },
+        ],
+        columns: [{ id: "col-1", title: "In Progress", order: 0 }],
+        clients: [],
+        version: 1,
+      }),
+    );
+    renderEarningsRoute();
+    const emptyState = screen.getByTestId("earnings-empty-no-period-data");
+    expect(emptyState).toHaveAttribute("role", "status");
+  });
+
+  it("[P0] earnings-empty-no-billable-work state has role='status' for screen reader announcement (AC1/NFR-A1)", () => {
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({
+        tasks: [
+          {
+            id: "t1", title: "Non-billable Task", columnId: "col-1", clientId: null,
+            isBillable: false, hourlyRate: null, timeSpent: 3600,
+            createdAt: Date.now() - 5 * 86400000,
+            priority: "medium", description: "", timeEstimate: null,
+            dueDate: null, tags: [], order: 0,
+          },
+        ],
+        columns: [{ id: "col-1", title: "In Progress", order: 0 }],
+        clients: [],
+        version: 1,
+      }),
+    );
+    localStorage.setItem(
+      "earnings-dashboard-state",
+      JSON.stringify({ version: 1, dateRangePreset: "last30", billableFilter: "billable", activeChart: "customer" }),
+    );
+    renderEarningsRoute();
+    const emptyState = screen.getByTestId("earnings-empty-no-billable-work");
+    expect(emptyState).toHaveAttribute("role", "status");
+  });
+
+  it("[P0] earnings-calculation-error state has role='alert' for immediate screen reader announcement (AC1/NFR-A1)", () => {
+    const spy = vi
+      .spyOn(earningsCalc, "calculateSummaryMetrics")
+      .mockImplementation(() => {
+        throw new Error("simulated calculation failure");
+      });
+    renderEarningsRoute();
+    const errorState = screen.getByTestId("earnings-calculation-error");
+    expect(errorState).toHaveAttribute("role", "alert");
+    spy.mockRestore();
+  });
+
+  it("[P0] earnings-metrics grid has aria-live='polite' so filter changes are announced (AC1/NFR-A1)", () => {
+    renderEarningsRoute();
+    const metricsGrid = screen.getByTestId("earnings-metrics");
+    expect(metricsGrid).toHaveAttribute("aria-live", "polite");
+  });
+
   it("[P1] renders project chart heading 'Revenue by Project' with seeded task and activeChart is 'project' (Story 3.2, AC1)", () => {
     const now = Date.now();
     localStorage.setItem(
