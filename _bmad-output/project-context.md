@@ -13,12 +13,13 @@ sections_completed:
   - epic_1_retro_2026_04_03
   - epic_2_retro_2026_04_05
   - epic_3_retro_2026_04_06
+  - epic_4_retro_2026_04_06
 status: 'complete'
-rule_count: 97
+rule_count: 100
 optimized_for_llm: true
 existing_patterns_found: 12
 last_updated: '2026-04-06'
-retro_source: '_bmad-output/implementation-artifacts/epic-3-retro-2026-04-06.md'
+retro_source: '_bmad-output/implementation-artifacts/epic-4-retro-2026-04-06.md'
 ---
 
 # Project Context for AI Agents
@@ -122,10 +123,12 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **`getTotalRevenue` in `AppContext` is unfiltered:** The Kanban global `getTotalRevenue` does not apply date-range filters. The earnings dashboard correctly filters via `filterTasksForEarnings`. Do not unify or cross-reference these for earnings display logic until Epic 5 alignment work is explicitly planned. Tracked as medium-priority debt in `deferred-work.md`.
 - **recharts component state contract (Epic 3):** All three chart components (`CustomerRevenueChart`, `ProjectRevenueChart`, `TagRevenueChart`) share one contract: `colorMap` (stable color assignment per key), `hiddenKeys` state (`Set` of legend keys toggled off), `visibleData` (full data minus `hiddenKeys`), `handleLegendClick` (toggle function). Replicate this exact pattern for any new chart — do not invent alternatives.
 - **`isAnimationActive={false}` on all `<Pie>` components (required):** Omitting it introduces 400ms+ animation delay per chart render, violating NFR-P1 (< 2s render) and NFR-P3 (< 500ms chart switch). All existing `<Pie>` components have this set — any new `<Pie>` must include it.
-- **Deferred debt — `hiddenKeys` not reset on filter/date change:** `hiddenKeys` state is NOT cleared when date range or billable filter changes in all 3 charts (user-visible stale legend state). Tracked for Story 4.4. Do NOT replicate this omission — reset `hiddenKeys` to an empty `Set` whenever the underlying dataset changes.
-- **Deferred debt — `formatCurrency` duplicated (3 chart components):** `CustomerRevenueChart`, `ProjectRevenueChart`, and `TagRevenueChart` each have a local `formatCurrency`. Story 4.4 extracts it to `src/lib/utils.ts`. Do NOT add a fourth copy — import from utils once extracted.
-- **Deferred debt — all-slices-hidden blank chart:** Toggling all legend entries off renders an empty chart with no message. Story 4.4 adds an empty-state message. New chart implementations should include this guard from the start.
+- **`hiddenKeys` must reset on filter/data change:** Always reset `hiddenKeys` to `new Set()` when `dateRange`, `billableFilter`, or any upstream data prop changes. Established in Story 4.4 — do not omit.
+- **`formatCurrency` lives in `src/lib/utils.ts`:** Do NOT add a local copy in any chart component — import from `@/lib/utils`. Extracted in Story 4.4; the three local copies in chart components are gone.
+- **All-slices-hidden empty state required:** New chart implementations must include an empty-state message when all legend keys are toggled off — do not render a blank chart silently. Implemented in Story 4.4.
 - **`TimeEntry` array:** collected in `AppState.timeEntries` but **not yet displayed in UI**. Do not remove it; it's a future feature. When stopping a timer, create a `TimeEntry` record if implementing that feature.
+- **Deferred — calendar popover auto-close (D4):** After selecting a date range in `DateRangeFilter.tsx`, the popover does not close automatically — users must close it manually. Target: Epic 6 or 7 UX review (owner: Amelia).
+- **Deferred — chart view selector visual inconsistency (D5):** Date range and billable controls use button groups; the chart view control remains a `<Select>` dropdown. Inconsistency is intentionally descoped through Epic 6. Target: Epic 7 accessibility review (owner: Winston).
 
 ### Testing Rules
 
@@ -150,12 +153,11 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **E2E timing rule — `Date.now()` after `page.goto()` (Epic 3):**
 
-- **Timer start position:** In any test measuring elapsed time, capture `Date.now()` **after** `page.goto()` completes — never before. Capturing before navigation causes flakiness under parallel workers due to CPU contention (Stories 1.1 and 3.2 fail intermittently at 100+ test parallelism). Tracked for Story 4.4 fix. All new timing tests must follow: navigate first, then capture baseline timestamp.
+- **Timer start position:** In any test measuring elapsed time, capture `Date.now()` **after** `page.goto()` completes — never before. Capturing before navigation causes flakiness under parallel workers due to CPU contention (Stories 1.1 and 3.2 fail intermittently at 100+ test parallelism). Fixed in Story 4.4. All new timing tests must follow: navigate first, then capture baseline timestamp.
 
-**Spike placeholders — patterns pending before Story 4.1 dev starts (Epic 4 prep):**
+**E2E state seed completeness (Action D2 — codified from Epic 4 retro):**
 
-- **shadcn/ui date range picker patterns (C2 — spike pending, owner: Amelia):** Component combination (`react-day-picker` + shadcn `Calendar` / `Popover`), controlled usage, state wiring to `EarningsDashboardPersistedState`, and import patterns are not yet documented. Do NOT implement Story 4.1 without these patterns — wait for Amelia's spike to be added here.
-- **Keyboard accessibility E2E patterns (C3 — spike pending, owner: Murat):** Playwright Tab order, Enter/Space on filter buttons, focus indicator assertions, and calendar cell interaction are undefined in this codebase. Do NOT write keyboard a11y E2E tests for Epic 4 stories without these patterns — wait for Murat's spike to be added here.
+- **`page.evaluate()` seeds must be complete valid state objects:** Never spread partial data over `{}` when seeding `EarningsDashboardPersistedState` via `page.evaluate()`. `coercePersisted` rejects incomplete state — always construct a full, valid `EarningsDashboardPersistedState`. Root cause of an ATDD seed bug in Story 4.2: `{ ...{}, someKey }` produces an incomplete object that `coercePersisted` rejects.
 
 **recharts / SVG Testing Patterns (Action B2 — finalize before Story 3.1):**
 
@@ -201,8 +203,8 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Do not** add a new `<Pie>` chart without `isAnimationActive={false}` — omitting it causes 400ms+ render delay and violates NFR-P1 and NFR-P3.
 - **Do not** implement a new chart component with a local `formatCurrency` helper — Story 4.4 extracts it to `src/lib/utils.ts`; import from there once available.
 - **Do not** leave `hiddenKeys` state unreset when the filter dataset changes — always reset to `new Set()` when `dateRange`, `billableFilter`, or any upstream data prop changes.
-- **Do not** implement shadcn/ui date picker or keyboard accessibility E2E for Epic 4 without first reading the C2 and C3 spike outputs in Testing Rules — patterns are not yet established.
 - **Do not** capture `Date.now()` before `page.goto()` in timing-sensitive E2E tests — flaky under parallel workers; capture after navigation completes.
+- **Do not** seed `EarningsDashboardPersistedState` via `page.evaluate()` with a partial spread over `{}` — always construct a full, valid state object; `coercePersisted` rejects incomplete state (Epic 4, Story 4.2 ATDD bug).
 
 ---
 
@@ -222,6 +224,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Optional: link from `README.md` so contributors know the file exists.
 
 Last Updated: 2026-04-06  
-Aligned with: Epic 3 retrospective (`epic-3-retro-2026-04-06.md`) — recharts component state contract (`colorMap`/`hiddenKeys`/`visibleData`/`handleLegendClick`), `isAnimationActive={false}` performance rule, deferred debt warnings (`hiddenKeys` reset, `formatCurrency` extraction, all-slices-hidden empty state), `Date.now()` after `page.goto()` timing rule, Epic 4 spike placeholders (C2 date picker, C3 keyboard a11y E2E).  
+Aligned with: Epic 4 retrospective (`epic-4-retro-2026-04-06.md`) — `hiddenKeys` reset rule (Story 4.4 closed), `formatCurrency` consolidated to `src/lib/utils.ts` (Story 4.4 closed), all-slices-hidden empty state (Story 4.4 closed), spike placeholders C2/C3 retired (resolved inline in Stories 4.1/4.3), `page.evaluate()` seed completeness rule (Action D2), D4/D5 formally tracked deferred items (calendar popover auto-close, chart view selector inconsistency).  
+Previously aligned with: Epic 3 retrospective (`epic-3-retro-2026-04-06.md`) — recharts component state contract (`colorMap`/`hiddenKeys`/`visibleData`/`handleLegendClick`), `isAnimationActive={false}` performance rule, `Date.now()` after `page.goto()` timing rule.  
 Previously aligned with: Epic 2 retrospective (`epic-2-retro-2026-04-05.md`) — E2E standing conventions (`--workers=1`, `{ exact: true }`, explicit state seeding), recharts/SVG Playwright patterns, `??` vs `||` for zero-rate fields, tag revenue `1/N` split contract, `getTotalRevenue` date-filter debt.  
 Previously aligned with: Epic 1 retrospective (`epic-1-retro-2026-04-03.md`) — import consistency, E2E i18n seeding, `clearState` / earnings persistence contract, FR26 bar, Epic 4 UI handoff notes.
