@@ -61,10 +61,16 @@ const DateRangeFilter: React.FC = () => {
   return (
     <div className="space-y-2">
       <Label>{t.earningsDateRangeLabel}</Label>
-      <div className="flex flex-wrap gap-2" data-testid="date-range-presets">
+      <div
+        className="flex flex-wrap gap-2"
+        data-testid="date-range-presets"
+        role="group"
+        aria-label={t.earningsDateRangeLabel}
+      >
         {PRESET_ORDER.map((preset) => (
           <Button
             key={preset}
+            type="button"
             variant={isPresetActive(preset) ? 'default' : 'outline'}
             size="sm"
             onClick={() => {
@@ -72,6 +78,7 @@ const DateRangeFilter: React.FC = () => {
               setCalendarRange(undefined);
             }}
             data-testid={`preset-${preset}`}
+            aria-pressed={isPresetActive(preset)}
           >
             {presetLabel(preset, t)}
           </Button>
@@ -80,9 +87,11 @@ const DateRangeFilter: React.FC = () => {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
+            type="button"
             variant="outline"
             className="max-w-md w-full justify-start text-left font-normal"
             data-testid="date-range-picker-trigger"
+            aria-label={t.earningsPickDateRange}
           >
             {formatDisplayRange(state, t)}
           </Button>

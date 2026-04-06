@@ -23,14 +23,21 @@ const BillableToggle: React.FC = () => {
   return (
     <div className="space-y-2">
       <Label>{t.earningsBillableFilterLabel}</Label>
-      <div className="flex flex-wrap gap-2" data-testid="billable-toggle">
+      <div
+        className="flex flex-wrap gap-2"
+        data-testid="billable-toggle"
+        role="group"
+        aria-label={t.earningsBillableFilterLabel}
+      >
         {FILTER_OPTIONS.map((filter) => (
           <Button
             key={filter}
+            type="button"
             variant={state.billableFilter === filter ? 'default' : 'outline'}
             size="sm"
             onClick={() => setBillableFilter(filter)}
             data-testid={`billable-toggle-${filter}`}
+            aria-pressed={state.billableFilter === filter}
           >
             {filterLabel(filter, t)}
           </Button>
