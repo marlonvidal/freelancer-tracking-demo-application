@@ -13,6 +13,7 @@ import { clearState } from '@/lib/storage';
 export type EarningsDashboardStateContextValue = {
   state: EarningsDashboardPersistedState;
   setDateRangePreset: (preset: DateRangePreset) => void;
+  setCustomDateRange: (range: { startMs: number; endMs: number } | undefined) => void;
   setBillableFilter: (filter: BillableFilter) => void;
   setActiveChartView: (chart: ActiveChartView) => void;
   /** Clears Kanban + earnings storage and resets in-memory filters to defaults without writing earnings key. */
@@ -29,6 +30,14 @@ export const EarningsDashboardStateProvider: React.FC<{ children: ReactNode }> =
   const setDateRangePreset = useCallback((dateRangePreset: DateRangePreset) => {
     setState((prev) => {
       const next: EarningsDashboardPersistedState = { ...prev, dateRangePreset, dateRange: undefined };
+      saveEarningsDashboardState(next);
+      return next;
+    });
+  }, []);
+
+  const setCustomDateRange = useCallback((range: { startMs: number; endMs: number } | undefined) => {
+    setState((prev) => {
+      const next: EarningsDashboardPersistedState = { ...prev, dateRange: range };
       saveEarningsDashboardState(next);
       return next;
     });
@@ -59,11 +68,12 @@ export const EarningsDashboardStateProvider: React.FC<{ children: ReactNode }> =
     () => ({
       state,
       setDateRangePreset,
+      setCustomDateRange,
       setBillableFilter,
       setActiveChartView,
       clearAppData,
     }),
-    [state, setDateRangePreset, setBillableFilter, setActiveChartView, clearAppData],
+    [state, setDateRangePreset, setCustomDateRange, setBillableFilter, setActiveChartView, clearAppData],
   );
 
   return (

@@ -5,11 +5,12 @@ import {
   EarningsDashboardStateProvider,
   useEarningsDashboardState,
 } from '@/context/EarningsDashboardStateContext';
-import type { ActiveChartView, BillableFilter, DateRangePreset } from '@/lib/earnings-dashboard-storage';
+import type { ActiveChartView, BillableFilter } from '@/lib/earnings-dashboard-storage';
 import { calculateRevenueByCustomer, calculateRevenueByProject, calculateRevenueByTag, calculateSummaryMetrics, resolveDateRangeMs } from '@/lib/earnings-calculations';
 import CustomerRevenueChart from '@/components/CustomerRevenueChart';
 import ProjectRevenueChart from '@/components/ProjectRevenueChart';
 import TagRevenueChart from '@/components/TagRevenueChart';
+import DateRangeFilter from '@/components/DateRangeFilter';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,16 +26,11 @@ import {
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
-/**
- * Interim filter controls (Story 1.3): Epics 3–4 will replace the date/billable/chart UI.
- * Persistence in `earnings-dashboard-state` must remain when that swap happens.
- */
 const EarningsDashboardContent: React.FC = () => {
   const { t } = useLanguage();
   const { state: appState } = useApp();
   const {
     state,
-    setDateRangePreset,
     setBillableFilter,
     setActiveChartView,
     clearAppData,
@@ -183,23 +179,7 @@ const EarningsDashboardContent: React.FC = () => {
         )}
 
         <div className="flex flex-col gap-6 max-w-xl">
-          <div className="space-y-2">
-            <Label htmlFor="earnings-date-range">{t.earningsDateRangeLabel}</Label>
-            <Select
-              value={state.dateRangePreset}
-              onValueChange={(v) => setDateRangePreset(v as DateRangePreset)}
-            >
-              <SelectTrigger id="earnings-date-range" className="max-w-md">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="last30">{t.earningsDateRangeLast30Days}</SelectItem>
-                <SelectItem value="quarter">{t.earningsDateRangeQuarter}</SelectItem>
-                <SelectItem value="year">{t.earningsDateRangeYear}</SelectItem>
-                <SelectItem value="all">{t.earningsDateRangeAll}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <DateRangeFilter />
 
           <div className="space-y-2">
             <Label htmlFor="earnings-billable-filter">{t.earningsBillableFilterLabel}</Label>

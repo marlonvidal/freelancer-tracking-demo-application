@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 
 type Language = 'en' | 'pt';
 
-interface Translations {
+export interface Translations {
   // Header
   totalRevenue: string;
   billableHours: string;
@@ -106,6 +106,8 @@ interface Translations {
   earningsProjectChartTitle: string;
   earningsTagChartTitle: string;
   earningsChartNoData: string;
+  earningsDateRangeCustom: string;
+  earningsPickDateRange: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -194,6 +196,8 @@ export const translations: Record<Language, Translations> = {
     earningsProjectChartTitle: 'Revenue by Project',
     earningsTagChartTitle: 'Revenue by Tag',
     earningsChartNoData: 'No data for this period',
+    earningsDateRangeCustom: 'Custom range',
+    earningsPickDateRange: 'Pick a date range',
   },
   pt: {
     totalRevenue: 'Receita Total',
@@ -280,6 +284,8 @@ export const translations: Record<Language, Translations> = {
     earningsProjectChartTitle: 'Receita por Projeto',
     earningsTagChartTitle: 'Receita por Tag',
     earningsChartNoData: 'Sem dados para este período',
+    earningsDateRangeCustom: 'Intervalo personalizado',
+    earningsPickDateRange: 'Escolha um intervalo de datas',
   },
 };
 

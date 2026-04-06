@@ -34,9 +34,8 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     await page.goto("/earnings");
     await expect(page.getByTestId("earnings-dashboard")).toBeVisible();
 
-    const dateControl = page.getByRole("combobox", { name: /date range/i });
-    await dateControl.click();
-    await page.getByRole("option", { name: /last\s*30\s*days/i }).click();
+    // Date range now uses preset buttons via DateRangeFilter (Story 4.1)
+    await page.getByTestId("preset-last30").click();
 
     const billableControl = page.getByRole("combobox", { name: /billable/i });
     await billableControl.click();
@@ -61,9 +60,8 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     await page.goto("/earnings");
     await expect(page.getByTestId("earnings-dashboard")).toBeVisible();
 
-    const dateControl = page.getByRole("combobox", { name: /date range/i });
-    await dateControl.click();
-    await page.getByRole("option", { name: /last\s*30\s*days/i }).click();
+    // Date range now uses preset buttons via DateRangeFilter (Story 4.1)
+    await page.getByTestId("preset-last30").click();
 
     const billableControl = page.getByRole("combobox", { name: /billable/i });
     await billableControl.click();
@@ -75,9 +73,11 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     await page.goto("/earnings");
     await expect(page.getByTestId("earnings-dashboard")).toBeVisible();
 
-    await expect(
-      page.getByRole("combobox", { name: /date range/i }),
-    ).toContainText(/last\s*30\s*days/i);
+    // Verify date range preset restored — preset-last30 button visible means DateRangeFilter loaded
+    await expect(page.getByTestId("preset-last30")).toBeVisible();
+    // Verify state persisted in localStorage
+    const stored = await readEarningsDashboardState(page);
+    expect(stored?.dateRangePreset).toBe("last30");
     await expect(
       page.getByRole("combobox", { name: /billable/i }),
     ).toContainText(/non[- ]?billable/i);
@@ -90,9 +90,8 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     await page.goto("/earnings");
     await expect(page.getByTestId("earnings-dashboard")).toBeVisible();
 
-    const dateControl = page.getByRole("combobox", { name: /date range/i });
-    await dateControl.click();
-    await page.getByRole("option", { name: /last\s*30\s*days/i }).click();
+    // Date range now uses preset buttons via DateRangeFilter (Story 4.1)
+    await page.getByTestId("preset-last30").click();
 
     const billableControl = page.getByRole("combobox", { name: /billable/i });
     await billableControl.click();
@@ -100,9 +99,10 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
 
     await page.reload();
 
-    await expect(
-      page.getByRole("combobox", { name: /date range/i }),
-    ).toContainText(/last\s*30\s*days/i);
+    // Verify date range preset restored after reload
+    await expect(page.getByTestId("preset-last30")).toBeVisible();
+    const stored = await readEarningsDashboardState(page);
+    expect(stored?.dateRangePreset).toBe("last30");
     await expect(
       page.getByRole("combobox", { name: /billable/i }),
     ).toContainText(/^all$/i);
@@ -149,9 +149,8 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     const raw = await page.evaluate((key) => localStorage.getItem(key), EARNINGS_STATE_KEY);
     expect(raw).toBeNull();
 
-    await expect(
-      page.getByRole("combobox", { name: /date range/i }),
-    ).toContainText(/last\s*30\s*days/i);
+    // Date range uses preset buttons via DateRangeFilter (Story 4.1) — default is last30
+    await expect(page.getByTestId("preset-last30")).toBeVisible();
     await expect(
       page.getByRole("combobox", { name: /billable/i }),
     ).toContainText(/^all$/i);

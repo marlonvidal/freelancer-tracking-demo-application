@@ -75,9 +75,8 @@ describe("EarningsDashboard", () => {
       }),
     );
     renderEarningsRoute();
-    expect(
-      screen.getByRole("combobox", { name: /date range/i }),
-    ).toHaveTextContent(/year/i);
+    // Date range now uses preset buttons via DateRangeFilter (Story 4.1)
+    expect(screen.getByTestId("preset-year")).toBeInTheDocument();
     expect(
       screen.getByRole("combobox", { name: /billable/i }),
     ).toHaveTextContent(/^billable$/i);

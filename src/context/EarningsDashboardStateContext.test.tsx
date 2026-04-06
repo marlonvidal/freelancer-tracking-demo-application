@@ -82,6 +82,39 @@ describe('EarningsDashboardStateProvider', () => {
     expect(parsed.activeChart).toBe('project');
   });
 
+  it('setCustomDateRange persists dateRange without clearing dateRangePreset', () => {
+    const { result } = renderHook(() => useEarningsDashboardState(), { wrapper });
+
+    act(() => {
+      result.current.setCustomDateRange({ startMs: 1000000, endMs: 2000000 });
+    });
+
+    const parsed = JSON.parse(localStorage.getItem(EARNINGS_DASHBOARD_STORAGE_KEY)!);
+    expect(parsed.dateRange).toEqual({ startMs: 1000000, endMs: 2000000 });
+    expect(parsed.dateRangePreset).toBe('last30'); // unchanged
+    expect(result.current.state.dateRange).toEqual({ startMs: 1000000, endMs: 2000000 });
+  });
+
+  it('setCustomDateRange(undefined) clears dateRange from state and storage', () => {
+    localStorage.setItem(
+      EARNINGS_DASHBOARD_STORAGE_KEY,
+      JSON.stringify({
+        version: 1, dateRangePreset: 'last30',
+        dateRange: { startMs: 1000, endMs: 2000 },
+        billableFilter: 'all', activeChart: 'customer',
+      }),
+    );
+    const { result } = renderHook(() => useEarningsDashboardState(), { wrapper });
+
+    act(() => {
+      result.current.setCustomDateRange(undefined);
+    });
+
+    const parsed = JSON.parse(localStorage.getItem(EARNINGS_DASHBOARD_STORAGE_KEY)!);
+    expect(parsed.dateRange).toBeUndefined();
+    expect(result.current.state.dateRange).toBeUndefined();
+  });
+
   it('clearAppData clears storage keys and resets in-memory state to defaults', () => {
     localStorage.setItem('freelancer-kanban-data', '{"tasks":[]}');
     localStorage.setItem(
