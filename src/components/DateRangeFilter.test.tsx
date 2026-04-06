@@ -242,6 +242,111 @@ describe('DateRangeFilter', () => {
     });
   });
 
+  // ── Story 4.3: ARIA accessibility attributes ─────────────────────────────────
+
+  describe('ARIA accessibility attributes (Story 4.3)', () => {
+    // ── Preset group wrapper ────────────────────────────────────────────────
+
+    it('[P0] date-range-presets wrapper has role="group"', () => {
+      renderDateRangeFilter();
+      expect(screen.getByTestId('date-range-presets')).toHaveAttribute('role', 'group');
+    });
+
+    it('[P0] date-range-presets wrapper has aria-label="Date range" in English', () => {
+      renderDateRangeFilter();
+      expect(screen.getByTestId('date-range-presets')).toHaveAttribute('aria-label', 'Date range');
+    });
+
+    it('[P1] date-range-presets wrapper has Portuguese aria-label when language=pt', () => {
+      localStorage.setItem('app-language', 'pt');
+      renderDateRangeFilter();
+      expect(screen.getByTestId('date-range-presets')).toHaveAttribute('aria-label', 'Intervalo de datas');
+    });
+
+    // ── type="button" ───────────────────────────────────────────────────────
+
+    it('[P0] all preset buttons have type="button"', () => {
+      renderDateRangeFilter();
+      expect(screen.getByTestId('preset-last30')).toHaveAttribute('type', 'button');
+      expect(screen.getByTestId('preset-quarter')).toHaveAttribute('type', 'button');
+      expect(screen.getByTestId('preset-year')).toHaveAttribute('type', 'button');
+      expect(screen.getByTestId('preset-all')).toHaveAttribute('type', 'button');
+    });
+
+    it('[P0] popover trigger button has type="button"', () => {
+      renderDateRangeFilter();
+      expect(screen.getByTestId('date-range-picker-trigger')).toHaveAttribute('type', 'button');
+    });
+
+    // ── Popover trigger aria-label ──────────────────────────────────────────
+
+    it('[P0] popover trigger has aria-label="Pick a date range" in English', () => {
+      renderDateRangeFilter();
+      expect(screen.getByTestId('date-range-picker-trigger')).toHaveAttribute(
+        'aria-label',
+        'Pick a date range',
+      );
+    });
+
+    it('[P1] popover trigger has Portuguese aria-label when language=pt', () => {
+      localStorage.setItem('app-language', 'pt');
+      renderDateRangeFilter();
+      expect(screen.getByTestId('date-range-picker-trigger')).toHaveAttribute(
+        'aria-label',
+        'Escolha um intervalo de datas',
+      );
+    });
+
+    // ── aria-pressed on preset buttons ──────────────────────────────────────
+
+    it('[P0] preset-last30 has aria-pressed="true" when active (default state)', () => {
+      renderDateRangeFilter();
+      expect(screen.getByTestId('preset-last30')).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('[P0] inactive presets have aria-pressed="false" when preset-last30 is active (default)', () => {
+      renderDateRangeFilter();
+      expect(screen.getByTestId('preset-quarter')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('preset-year')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('preset-all')).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('[P1] preset-quarter has aria-pressed="true" when dateRangePreset=quarter and no custom range', () => {
+      seedState({ dateRangePreset: 'quarter' });
+      renderDateRangeFilter();
+      expect(screen.getByTestId('preset-quarter')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('preset-last30')).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('[P1] aria-pressed updates reactively after clicking a different preset', () => {
+      renderDateRangeFilter();
+      // Initially last30 is active
+      expect(screen.getByTestId('preset-last30')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('preset-year')).toHaveAttribute('aria-pressed', 'false');
+
+      // Click "year"
+      fireEvent.click(screen.getByTestId('preset-year'));
+
+      // "year" is now active; "last30" is inactive
+      expect(screen.getByTestId('preset-year')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('preset-last30')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('preset-quarter')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('preset-all')).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('[P1] all preset buttons have aria-pressed="false" when a custom dateRange is set (isPresetActive returns false)', () => {
+      seedState({
+        dateRangePreset: 'last30',
+        dateRange: { startMs: 1_000_000, endMs: 2_000_000 },
+      });
+      renderDateRangeFilter();
+      expect(screen.getByTestId('preset-last30')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('preset-quarter')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('preset-year')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('preset-all')).toHaveAttribute('aria-pressed', 'false');
+    });
+  });
+
   // ── Edge cases ──────────────────────────────────────────────────────────────
 
   describe('edge cases', () => {

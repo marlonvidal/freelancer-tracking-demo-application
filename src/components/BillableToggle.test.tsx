@@ -176,6 +176,75 @@ describe('BillableToggle', () => {
     });
   });
 
+  // ── Story 4.3: ARIA accessibility attributes ─────────────────────────────────
+
+  describe('ARIA accessibility attributes (Story 4.3)', () => {
+    it('[P0] billable-toggle wrapper has role="group"', () => {
+      renderBillableToggle();
+      expect(screen.getByTestId('billable-toggle')).toHaveAttribute('role', 'group');
+    });
+
+    it('[P0] billable-toggle wrapper has aria-label="Billable filter" in English', () => {
+      renderBillableToggle();
+      expect(screen.getByTestId('billable-toggle')).toHaveAttribute('aria-label', 'Billable filter');
+    });
+
+    it('[P1] billable-toggle wrapper has Portuguese aria-label when language=pt', () => {
+      localStorage.setItem('app-language', 'pt');
+      renderBillableToggle();
+      expect(screen.getByTestId('billable-toggle')).toHaveAttribute('aria-label', 'Filtro faturável');
+    });
+
+    it('[P0] all filter buttons have type="button"', () => {
+      renderBillableToggle();
+      expect(screen.getByTestId('billable-toggle-all')).toHaveAttribute('type', 'button');
+      expect(screen.getByTestId('billable-toggle-billable')).toHaveAttribute('type', 'button');
+      expect(screen.getByTestId('billable-toggle-nonBillable')).toHaveAttribute('type', 'button');
+    });
+
+    it('[P0] "all" button has aria-pressed="true" when billableFilter=all (default)', () => {
+      renderBillableToggle();
+      expect(screen.getByTestId('billable-toggle-all')).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('[P0] "billable" and "nonBillable" buttons have aria-pressed="false" when billableFilter=all (default)', () => {
+      renderBillableToggle();
+      expect(screen.getByTestId('billable-toggle-billable')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('billable-toggle-nonBillable')).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('[P1] "billable" button has aria-pressed="true" when billableFilter=billable', () => {
+      seedState({ billableFilter: 'billable' });
+      renderBillableToggle();
+      expect(screen.getByTestId('billable-toggle-billable')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('billable-toggle-all')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('billable-toggle-nonBillable')).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('[P1] "nonBillable" button has aria-pressed="true" when billableFilter=nonBillable', () => {
+      seedState({ billableFilter: 'nonBillable' });
+      renderBillableToggle();
+      expect(screen.getByTestId('billable-toggle-nonBillable')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('billable-toggle-all')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('billable-toggle-billable')).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('[P1] aria-pressed updates reactively after clicking a different filter button', () => {
+      renderBillableToggle();
+      // Initially "all" is active
+      expect(screen.getByTestId('billable-toggle-all')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('billable-toggle-billable')).toHaveAttribute('aria-pressed', 'false');
+
+      // Click "billable"
+      fireEvent.click(screen.getByTestId('billable-toggle-billable'));
+
+      // "billable" is now active; "all" is inactive
+      expect(screen.getByTestId('billable-toggle-billable')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('billable-toggle-all')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTestId('billable-toggle-nonBillable')).toHaveAttribute('aria-pressed', 'false');
+    });
+  });
+
   // ── Edge cases ───────────────────────────────────────────────────────────────
 
   describe('edge cases', () => {

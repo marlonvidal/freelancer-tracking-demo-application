@@ -6,199 +6,221 @@ stepsCompleted:
   - step-03c-aggregate
   - step-04-validate-and-summarize
 lastStep: step-04-validate-and-summarize
-lastSaved: 2026-04-06
-story: 4-2-implement-billable-non-billable-toggle
+lastSaved: '2026-04-06'
 inputDocuments:
-  - _bmad-output/implementation-artifacts/4-2-implement-billable-non-billable-toggle.md
-  - _bmad/tea/config.yaml
+  - _bmad-output/implementation-artifacts/4-3-ensure-filter-responsiveness-and-keyboard-accessibility.md
+  - src/components/BillableToggle.tsx
+  - src/components/DateRangeFilter.tsx
+  - src/components/BillableToggle.test.tsx
+  - src/components/DateRangeFilter.test.tsx
+  - tests/e2e/story-4-3-ensure-filter-responsiveness-and-keyboard-accessibility-atdd.spec.ts
   - playwright.config.ts
   - vitest.config.ts
-  - src/components/BillableToggle.tsx
-  - src/components/DateRangeFilter.test.tsx
-  - src/lib/earnings-dashboard-storage.ts
-  - tests/e2e/story-4-2-implement-billable-non-billable-toggle-atdd.spec.ts
-  - tests/api/story-4-2-billable-toggle-storage-atdd.spec.ts
-  - src/pages/EarningsDashboard.test.tsx
 ---
 
-# Test Automation Summary — Story 4.2: Implement Billable/Non-Billable Toggle
+# Test Automation Expansion — Story 4.3
+## Ensure Filter Responsiveness and Keyboard Accessibility
+
+**Date:** 2026-04-06  
+**Story:** `4-3-ensure-filter-responsiveness-and-keyboard-accessibility`  
+**Workflow Mode:** BMad-Integrated / Sequential  
+**Detected Stack:** `frontend` (React + Vitest + Playwright)
+
+---
 
 ## Step 1: Preflight & Context
 
-### Stack Detection
-
-| Property | Value |
-|---|---|
-| `detected_stack` | `frontend` |
-| Test framework | Vitest (unit) + Playwright (E2E) |
-| `tea_use_playwright_utils` | `true` |
-| `tea_use_pactjs_utils` | `false` |
-| `tea_execution_mode` | `sequential` (resolved from `auto`) |
-
 ### Framework Verification
 
-- `playwright.config.ts` ✅ — Projects: `chromium` (E2E), `atdd-api` (API/storage)
-- `vitest.config.ts` ✅ — jsdom environment, includes `src/**/*.{test,spec}.{ts,tsx}`
-- `tests/support/fixtures/` ✅ — Base fixtures and task factory in place
+| Check | Status |
+|-------|--------|
+| `playwright.config.ts` present | ✅ |
+| `vitest.config.ts` present | ✅ |
+| `package.json` with test dependencies | ✅ |
+| Existing test structure in `src/` and `tests/` | ✅ |
 
 ### Execution Mode
+- **BMad-Integrated**: Story file with full context provided
+- **Execution**: Sequential (single agent, no subagents)
+- **Stack**: `frontend`
 
-**Mode:** `sequential` (auto-resolved — capability probe returned no subagent/agent-team support in this context)
-
-### Baseline (pre-automation)
-
-| Suite | Files | Tests | Status |
-|---|---|---|---|
-| Vitest (unit/component) | 13 | 188 | All passing |
-| Playwright E2E (story 4.2 ATDD) | 1 | 7 | All passing |
-| Playwright API (story 4.2 storage) | 1 | 2 | All passing |
+### Baseline (before this workflow)
+- Vitest unit/component tests: **207 passing**
+- Playwright E2E tests: **10 Story 4.3 tests passing** (from ATDD phase)
 
 ---
 
-## Step 2: Identify Automation Targets
+## Step 2: Identify Targets
+
+### Story 4.3 Code Changes (scope reference)
+
+| File | Changes |
+|------|---------|
+| `src/components/BillableToggle.tsx` | Added `role="group"`, `aria-label`, `type="button"`, `aria-pressed` |
+| `src/components/DateRangeFilter.tsx` | Added `role="group"`, `aria-label` (group + trigger), `type="button"`, `aria-pressed` |
+| `tests/e2e/story-4-3-*-atdd.spec.ts` | Created (ATDD phase — 10 E2E tests) |
 
 ### Coverage Gap Analysis
 
-Story 4.2 created `src/components/BillableToggle.tsx` but did **not** create a companion component-level test file. This is the only uncovered gap — all other story outputs (storage layer, E2E user flows, dashboard integration) had existing coverage.
+**`BillableToggle.test.tsx` — gaps before this workflow:**
 
-**Pattern reference:** `src/components/DateRangeFilter.test.tsx` (26 tests, Story 4.1) — identical component shape, identical context dependency pattern.
+| Attribute | Gap |
+|-----------|-----|
+| `role="group"` on wrapper | Not tested |
+| `aria-label` on wrapper (EN + PT) | Not tested |
+| `type="button"` on all buttons | Not tested |
+| `aria-pressed` initial value (active/inactive) | Not tested |
+| `aria-pressed` reactive update after click | Not tested |
 
-### Coverage Already Present (not duplicated)
+**`DateRangeFilter.test.tsx` — gaps before this workflow:**
 
-| File | Coverage |
-|---|---|
-| `tests/e2e/story-4-2-implement-billable-non-billable-toggle-atdd.spec.ts` | AC1–AC5, NFR-P2 (7 E2E tests) |
-| `tests/api/story-4-2-billable-toggle-storage-atdd.spec.ts` | Storage contract, coercePersisted defaults (2 API tests) |
-| `src/pages/EarningsDashboard.test.tsx` | BillableToggle rendered in dashboard context (regression guard) |
-| `src/lib/earnings-dashboard-storage.test.ts` | billableFilter enum validation, round-trip, corruption handling |
-| `src/context/EarningsDashboardStateContext.test.tsx` | setBillableFilter context action |
+| Attribute | Gap |
+|-----------|-----|
+| `role="group"` on preset wrapper | Not tested |
+| `aria-label` on preset wrapper (EN + PT) | Not tested |
+| `type="button"` on preset buttons | Not tested |
+| `type="button"` on trigger button | Not tested |
+| `aria-label` on trigger (EN + PT) | Not tested |
+| `aria-pressed` initial value per preset | Not tested |
+| `aria-pressed` reactive update after preset click | Not tested |
+| `aria-pressed="false"` for all presets when custom `dateRange` is set | Not tested |
 
 ### Coverage Plan
 
-| Target | Test Level | Tests | Priority |
-|---|---|---|---|
-| `BillableToggle` — wrapper + buttons render | Component (Vitest) | 2 | P0 |
-| `BillableToggle` — label render (EN) | Component (Vitest) | 3 | P0 |
-| `BillableToggle` — button labels EN | Component (Vitest) | 3 | P0 |
-| `BillableToggle` — button labels PT (i18n) | Component (Vitest) | 3 | P1 |
-| `BillableToggle` — active variant class | Component (Vitest) | 3 | P1 |
-| `BillableToggle` — click → localStorage | Component (Vitest) | 4 | P1 |
-| `BillableToggle` — edge cases (idempotent, default) | Component (Vitest) | 3 | P2 |
-
-**Total new tests planned:** 19
+| Level | Target | Priority | Justification |
+|-------|---------|----------|---------------|
+| Component | `BillableToggle` ARIA attributes | P0–P1 | ARIA semantic contract is core to AC2, AC4; must have unit coverage |
+| Component | `DateRangeFilter` ARIA attributes | P0–P1 | ARIA semantic contract is core to AC2, AC3; must have unit coverage |
+| E2E | Story 4.3 ATDD spec | Verify only | 10 tests already passing from ATDD phase — no new E2E added |
 
 ---
 
-## Step 3: Test Generation (Sequential)
+## Step 3: Test Generation
 
-### Worker A — API Test Generation
+### Execution Mode Resolution
 
-API layer coverage for story 4.2 was **fully covered** by the existing ATDD spec (`tests/api/story-4-2-billable-toggle-storage-atdd.spec.ts`). No new API tests generated to avoid duplication.
+```
+⚙️ Execution Mode Resolution:
+- Requested: auto
+- Probe Enabled: true
+- Supports agent-team: false
+- Supports subagent: false
+- Resolved: sequential
+```
 
-### Worker B — E2E Test Generation
+### Tests Generated
 
-E2E coverage for story 4.2 was **fully covered** by the existing ATDD spec. No new E2E tests generated to avoid duplication. Existing 7 tests verified passing.
+#### `src/components/BillableToggle.test.tsx` — New `describe` block added
 
-### Worker B (Component) — Unit Test Generation
+**Section:** `ARIA accessibility attributes (Story 4.3)`  
+**Tests added:** 9
 
-**Generated:** `src/components/BillableToggle.test.tsx`
+| Test | Priority | Coverage |
+|------|----------|----------|
+| `[P0] billable-toggle wrapper has role="group"` | P0 | role="group" on wrapper |
+| `[P0] billable-toggle wrapper has aria-label="Billable filter" in English` | P0 | aria-label EN |
+| `[P1] billable-toggle wrapper has Portuguese aria-label when language=pt` | P1 | aria-label PT |
+| `[P0] all filter buttons have type="button"` | P0 | type="button" |
+| `[P0] "all" button has aria-pressed="true" when billableFilter=all (default)` | P0 | aria-pressed initial active |
+| `[P0] "billable" and "nonBillable" buttons have aria-pressed="false" when billableFilter=all (default)` | P0 | aria-pressed initial inactive |
+| `[P1] "billable" button has aria-pressed="true" when billableFilter=billable` | P1 | aria-pressed seeded active state |
+| `[P1] "nonBillable" button has aria-pressed="true" when billableFilter=nonBillable` | P1 | aria-pressed seeded active state |
+| `[P1] aria-pressed updates reactively after clicking a different filter button` | P1 | aria-pressed reactive update |
 
-19 tests across 5 describe groups:
+#### `src/components/DateRangeFilter.test.tsx` — New `describe` block added
 
-| Group | Tests | Priority |
-|---|---|---|
-| `rendering` | 3 | P0 |
-| `button labels — English` | 3 | P0 |
-| `button labels — Portuguese` | 3 | P1 |
-| `active state highlighting` | 3 | P1 |
-| `click interactions` | 4 | P1 |
-| `edge cases` | 3 | P2 |
+**Section:** `ARIA accessibility attributes (Story 4.3)`  
+**Tests added:** 12
+
+| Test | Priority | Coverage |
+|------|----------|----------|
+| `[P0] date-range-presets wrapper has role="group"` | P0 | role="group" on preset wrapper |
+| `[P0] date-range-presets wrapper has aria-label="Date range" in English` | P0 | aria-label EN on group |
+| `[P1] date-range-presets wrapper has Portuguese aria-label when language=pt` | P1 | aria-label PT on group |
+| `[P0] all preset buttons have type="button"` | P0 | type="button" on presets |
+| `[P0] popover trigger button has type="button"` | P0 | type="button" on trigger |
+| `[P0] popover trigger has aria-label="Pick a date range" in English` | P0 | aria-label EN on trigger |
+| `[P1] popover trigger has Portuguese aria-label when language=pt` | P1 | aria-label PT on trigger |
+| `[P0] preset-last30 has aria-pressed="true" when active (default state)` | P0 | aria-pressed active default |
+| `[P0] inactive presets have aria-pressed="false" when preset-last30 is active (default)` | P0 | aria-pressed inactive default |
+| `[P1] preset-quarter has aria-pressed="true" when dateRangePreset=quarter` | P1 | aria-pressed seeded active |
+| `[P1] aria-pressed updates reactively after clicking a different preset` | P1 | aria-pressed reactive update |
+| `[P1] all preset buttons have aria-pressed="false" when custom dateRange is set` | P1 | aria-pressed edge case (custom range) |
 
 ---
 
-## Step 3C: Aggregation
+## Step 3C: Aggregate Results
 
-### Files Written
+### Files Modified
 
 | Action | Path |
-|---|---|
-| **Created** | `src/components/BillableToggle.test.tsx` |
+|--------|------|
+| Modified | `src/components/BillableToggle.test.tsx` |
+| Modified | `src/components/DateRangeFilter.test.tsx` |
+| Created | `_bmad-output/test-artifacts/automation-summary.md` (this file) |
 
-### Fixture Needs
+### No New Fixtures Required
+- Both test files use the existing `renderBillableToggle()` / `renderDateRangeFilter()` helper patterns already established in Story 4.2 and 4.1 respectively.
+- No new fixture infrastructure needed.
 
-No new fixtures required. Existing providers (`LanguageProvider`, `EarningsDashboardStateProvider`) used — identical to `DateRangeFilter.test.tsx` pattern.
+### Test Count Summary
 
-### Summary Statistics
-
-| Metric | Value |
-|---|---|
-| Stack type | `frontend` |
-| Tests generated (new) | 19 |
-| Test files created | 1 |
-| Test files modified | 0 |
-| Fixtures created | 0 |
-| Priority P0 | 6 |
-| Priority P1 | 10 |
-| Priority P2 | 3 |
-| Execution mode | SEQUENTIAL |
+| Metric | Count |
+|--------|-------|
+| New tests added | **21** |
+| BillableToggle ARIA tests | 9 |
+| DateRangeFilter ARIA tests | 12 |
+| Priority P0 (Critical) | 10 |
+| Priority P1 (High) | 11 |
+| Priority P2 (Medium) | 0 |
+| Priority P3 (Low) | 0 |
 
 ---
 
-## Step 4: Validation & Final Results
+## Step 4: Validate & Summarize
 
-### Validation Checklist
+### Checklist
 
-- [x] Framework readiness verified (Vitest + Playwright both configured)
-- [x] Coverage mapped to story ACs and implementation files
-- [x] No duplication with existing ATDD, storage, or dashboard tests
-- [x] Test quality: describe groups, beforeEach cleanup, exact label matching with testId scoping
-- [x] Fixtures reuse existing providers (no orphaned mocks)
-- [x] No CLI browser sessions opened (component tests only)
-- [x] Temp artifacts stored in `_bmad-output/test-artifacts/` (this file)
-- [x] All new tests pass: 19/19
-- [x] No regressions: full suite 207/207
+- [x] Framework readiness verified (`playwright.config.ts`, `vitest.config.ts`)
+- [x] Coverage mapped to Story 4.3 ACs and ARIA changes
+- [x] Test quality validated — no linter errors in modified files
+- [x] Tests follow existing file patterns (same helpers, imports, describe structure)
+- [x] No duplicate coverage with ATDD E2E tests (component tests target DOM attributes; E2E tests target keyboard interaction in browser)
+- [x] No tests added for code outside Story 4.3 scope
+- [x] No existing tests broken (all 207 baseline tests still pass)
+- [x] Temp artifacts stored in `_bmad-output/test-artifacts/` not random locations
+- [x] No orphaned browser sessions (no Playwright CLI used in this workflow)
 
 ### Final Test Suite Results
 
 | Suite | Before | After | Delta |
-|---|---|---|---|
-| Vitest unit/component files | 13 | **14** | +1 |
-| Vitest tests | 188 | **207** | **+19** |
-| Playwright E2E (story 4.2 ATDD) | 7 | 7 | ±0 |
-| Playwright API (story 4.2 storage) | 2 | 2 | ±0 |
-| **Total tests (Vitest + verified Playwright)** | 197 | **216** | **+19** |
+|-------|--------|-------|-------|
+| Vitest (unit/component) | 207 ✅ | 228 ✅ | +21 |
+| Playwright E2E (Story 4.3 ATDD) | 10 ✅ | 10 ✅ | 0 |
+| Total | 217 | 238 | +21 |
 
-**All tests pass. No regressions.**
+**Result: 228 Vitest PASS / 0 FAIL**
 
-### Coverage Improvements
+### Coverage Improvements (Story 4.3 scope)
 
-Areas now covered that were not before:
+Areas now covered that were **not** covered before this workflow:
 
-| Area | Coverage Added |
-|---|---|
-| `BillableToggle` component rendering | Wrapper `data-testid`, three button `data-testid` attributes, label text |
-| `BillableToggle` English i18n | "All", "Billable", "Non-billable" button labels via component test |
-| `BillableToggle` Portuguese i18n | "Filtro faturável", "Faturável", "Não faturável" — bilingual stability |
-| `BillableToggle` active state | CSS variant class (`bg-primary`) per active filter value (all/billable/nonBillable) |
-| `BillableToggle` click → persistence | Each filter button click persists correct `billableFilter` to localStorage |
-| `BillableToggle` state isolation | Clicking a button does not alter `dateRangePreset` or other state fields |
-| `BillableToggle` edge cases | Idempotent re-click, default state rendering (no seed) |
-| `filterLabel` utility | Implicitly tested through all button text assertions |
+1. **`role="group"` on both filter button groups** — screen reader grouping context is now contractually tested at component level
+2. **`aria-label` on button groups (EN + PT)** — bilingual ARIA labeling is regression-protected
+3. **`type="button"` on all filter buttons and trigger** — defensive attribute preventing accidental form submission is now verified
+4. **`aria-pressed` initial state for all filter options** — correct initial ARIA semantics verified for all three billable filter options and all four date preset options
+5. **`aria-pressed` reactive updates** — verified that toggling active filter/preset correctly flips `aria-pressed` to `true` on newly active element and `false` on all others
+6. **`aria-pressed="false"` for all presets when custom `dateRange` is set** — the `isPresetActive()` edge case (custom range deactivates all presets) is now verified at attribute level
+7. **`aria-label` on Popover trigger (EN + PT)** — supplementary screen reader label for calendar trigger is bilingualy tested
 
-### Key Assumptions
-
-1. `BillableToggle.test.tsx` follows the `DateRangeFilter.test.tsx` render helper pattern — full providers (`LanguageProvider` + `EarningsDashboardStateProvider`) to avoid mock drift.
-2. Class inspection (`bg-primary`) is consistent with the shadcn CVA `default` variant — same approach accepted in both Story 4.1 `DateRangeFilter.test.tsx` and the Story 4.2 E2E ATDD spec.
-3. No new E2E or API tests added — ATDD specs from the story implementation already provide comprehensive user-flow and storage-contract coverage. Adding more would duplicate.
-
-### Risks
+### Risks and Assumptions
 
 | Risk | Mitigation |
-|---|---|
-| `toHaveClass(/bg-primary/)` fragile against CSS rename | Documented; follows Story 4.1 precedent; deferred to visual regression tooling |
-| Portuguese translation values may drift | Tests use hardcoded PT strings — update if `LanguageContext.tsx` PT translations change |
+|------|-----------|
+| `aria-pressed` React boolean-to-string coercion | Verified: React renders `aria-pressed={false}` as attribute value `"false"` in jsdom — matches E2E assertions |
+| PT translations could drift | Tests assert exact PT translation strings tied to `LanguageContext.tsx` — any drift will be caught immediately |
 
 ### Next Recommended Workflow
 
-- **`bmad-testarch-test-review`** — validate test quality against TEA best-practice checklist
-- **`bmad-testarch-trace`** — generate traceability matrix mapping tests to story ACs (FR15–FR20, FR41, NFR-P2)
+- **`bmad-testarch-test-review`** — review test quality and structure of all Story 4.3 tests (ATDD + new unit tests)
+- **`bmad-testarch-trace`** — generate traceability matrix mapping ACs to test coverage
