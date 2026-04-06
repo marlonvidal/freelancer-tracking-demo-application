@@ -69,6 +69,7 @@ const CustomerRevenueChart: React.FC<CustomerRevenueChartProps> = ({ data }) => 
             cx="50%"
             cy="50%"
             outerRadius="70%"
+            isAnimationActive={false}
           >
             {visibleData.map((entry) => (
               <Cell

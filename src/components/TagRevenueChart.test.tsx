@@ -137,5 +137,30 @@ describe("TagRevenueChart", () => {
         screen.getByRole("heading", { level: 2, name: "Revenue by Tag" }),
       ).toBeInTheDocument();
     });
+
+    it("[P2] renders chart container when all tags have zero revenue (total=0 branch)", () => {
+      const rows: RevenueByTagRow[] = [
+        { tag: "design", totalRevenue: 0, taskCount: 0 },
+        { tag: "development", totalRevenue: 0, taskCount: 0 },
+      ];
+      renderChart(rows);
+      expect(screen.getByTestId("tag-revenue-chart")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 2, name: "Revenue by Tag" }),
+      ).toBeInTheDocument();
+    });
+
+    it("[P2] renders large dataset (100 tags) without crashing", () => {
+      const rows: RevenueByTagRow[] = Array.from({ length: 100 }, (_, i) => ({
+        tag: `tag-${i}`,
+        totalRevenue: (i + 1) * 10,
+        taskCount: i + 1,
+      }));
+      renderChart(rows);
+      expect(screen.getByTestId("tag-revenue-chart")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 2, name: "Revenue by Tag" }),
+      ).toBeInTheDocument();
+    });
   });
 });

@@ -120,5 +120,31 @@ describe("ProjectRevenueChart", () => {
         screen.getByRole("heading", { level: 2, name: "Revenue by Project" }),
       ).toBeInTheDocument();
     });
+
+    it("[P2] renders chart container when all projects have zero revenue (total=0 branch)", () => {
+      const rows: RevenueByProjectRow[] = [
+        { columnId: "col-1", columnTitle: "Discovery", totalRevenue: 0, taskCount: 0 },
+        { columnId: "col-2", columnTitle: "Development", totalRevenue: 0, taskCount: 0 },
+      ];
+      renderChart(rows);
+      expect(screen.getByTestId("project-revenue-chart")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 2, name: "Revenue by Project" }),
+      ).toBeInTheDocument();
+    });
+
+    it("[P2] renders large dataset (100 projects) without crashing", () => {
+      const rows: RevenueByProjectRow[] = Array.from({ length: 100 }, (_, i) => ({
+        columnId: `col-${i}`,
+        columnTitle: `Project ${i}`,
+        totalRevenue: (i + 1) * 10,
+        taskCount: i + 1,
+      }));
+      renderChart(rows);
+      expect(screen.getByTestId("project-revenue-chart")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 2, name: "Revenue by Project" }),
+      ).toBeInTheDocument();
+    });
   });
 });

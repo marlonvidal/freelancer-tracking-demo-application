@@ -106,5 +106,45 @@ describe("CustomerRevenueChart", () => {
         screen.getByRole("heading", { level: 2, name: "Revenue by Customer" }),
       ).toBeInTheDocument();
     });
+
+    it("[P2] handles more than 10 customers (color palette cycles without crashing)", () => {
+      const rows: RevenueByCustomerRow[] = Array.from({ length: 12 }, (_, i) => ({
+        customerId: `c${i}`,
+        customerName: `Client ${i}`,
+        totalRevenue: (i + 1) * 50,
+        taskCount: 1,
+      }));
+      renderChart(rows);
+      expect(screen.getByTestId("customer-revenue-chart")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 2, name: "Revenue by Customer" }),
+      ).toBeInTheDocument();
+    });
+
+    it("[P2] renders chart container when all customers have zero revenue (total=0 branch)", () => {
+      const rows: RevenueByCustomerRow[] = [
+        { customerId: "c1", customerName: "Acme Corp", totalRevenue: 0, taskCount: 0 },
+        { customerId: "c2", customerName: "Beta Inc", totalRevenue: 0, taskCount: 0 },
+      ];
+      renderChart(rows);
+      expect(screen.getByTestId("customer-revenue-chart")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 2, name: "Revenue by Customer" }),
+      ).toBeInTheDocument();
+    });
+
+    it("[P2] renders large dataset (100 customers) without crashing", () => {
+      const rows: RevenueByCustomerRow[] = Array.from({ length: 100 }, (_, i) => ({
+        customerId: `c${i}`,
+        customerName: `Client ${i}`,
+        totalRevenue: (i + 1) * 10,
+        taskCount: i + 1,
+      }));
+      renderChart(rows);
+      expect(screen.getByTestId("customer-revenue-chart")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 2, name: "Revenue by Customer" }),
+      ).toBeInTheDocument();
+    });
   });
 });
