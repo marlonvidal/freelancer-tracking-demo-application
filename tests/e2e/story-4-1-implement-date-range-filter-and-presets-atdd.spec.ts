@@ -14,9 +14,6 @@ import { blockKnownThirdPartyHosts } from "../support/helpers/network";
  *   AC5 — Date range persists across navigation via localStorage (FR14, FR40)
  *   AC6 — UI responds within 500ms (NFR-P2)
  *
- * TDD Phase: 🔴 RED — All tests use test.skip() (DateRangeFilter not implemented yet).
- * Remove test.skip() after implementing Story 4.1.
- *
  * Conventions (from project-context.md):
  * - Always import from '../support/fixtures' (not '@playwright/test')
  * - Always call blockKnownThirdPartyHosts(page) before page.goto()
@@ -99,8 +96,6 @@ test.describe("Story 4.1 ATDD — Date Range Filter and Presets", () => {
   test(
     "[P0] four preset buttons are visible on the earnings dashboard (AC3, FR12)",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — DateRangeFilter component not implemented yet.
-      // Expected: data-testid="date-range-presets" container and four preset buttons render.
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
@@ -132,9 +127,6 @@ test.describe("Story 4.1 ATDD — Date Range Filter and Presets", () => {
   test(
     "[P0] clicking 'Last 30 days' preset filters dashboard and persists dateRangePreset (AC2, FR12)",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — DateRangeFilter component not implemented yet.
-      // Expected: clicking the preset button calls setDateRangePreset('last30'), updates
-      // localStorage earnings-dashboard-state, and the customer chart remains visible.
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
@@ -158,9 +150,6 @@ test.describe("Story 4.1 ATDD — Date Range Filter and Presets", () => {
   test(
     "[P0] clicking the date picker trigger opens a calendar popover (AC1, FR11)",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — DateRangeFilter component not implemented yet.
-      // Expected: a PopoverTrigger button with data-testid="date-range-picker-trigger" exists
-      // and clicking it opens a Popover containing a react-day-picker Calendar (role="grid").
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
@@ -178,10 +167,6 @@ test.describe("Story 4.1 ATDD — Date Range Filter and Presets", () => {
   test(
     "[P0] selecting a custom date range via calendar applies filter to all charts (AC1, AC4, FR11, FR13)",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — DateRangeFilter component not implemented yet.
-      // Expected: selecting two dates in the calendar popover calls setCustomDateRange
-      // with { startMs, endMs }, persists to localStorage, and all three charts reflect
-      // the filter (chart data recalculates via resolveDateRangeMs priority: custom > preset).
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
@@ -224,9 +209,6 @@ test.describe("Story 4.1 ATDD — Date Range Filter and Presets", () => {
   test(
     "[P0] selected preset persists across navigation to home and back (AC5, FR14, FR40)",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — DateRangeFilter component not implemented yet.
-      // Expected: dateRangePreset is persisted to localStorage earnings-dashboard-state,
-      // and is restored when the user navigates back to /earnings.
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
@@ -263,11 +245,6 @@ test.describe("Story 4.1 ATDD — Date Range Filter and Presets", () => {
   test(
     "[P1] filter interaction responds within 500ms — preset click updates chart (AC6, NFR-P2)",
     async ({ page }) => {
-      // THIS TEST WILL FAIL — DateRangeFilter component not implemented yet.
-      // Expected: clicking a preset button triggers a state update and chart re-render
-      // within 500ms (NFR-P2). setDateRangePreset is synchronous; useMemo recalculates
-      // only the active chart — no blocking computation.
-      //
       // Date.now() timing rule: capture AFTER page.goto() (project-context.md E2E timing rule).
       // test.describe.configure({ retries: 1 }) applied at describe level for transient CPU contention.
       await blockKnownThirdPartyHosts(page);

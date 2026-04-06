@@ -1,6 +1,6 @@
 # Story 4.1: Implement Date Range Filter and Presets
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created -->
 
@@ -669,8 +669,15 @@ claude-4.6-sonnet-medium-thinking
 || Edit | `tests/e2e/earnings-dashboard-persistence.spec.ts` |
 || Edit | `src/pages/EarningsDashboard.test.tsx` |
 
+### Review Findings
+
+- [x] [Review][Patch] Stale `🔴 RED` TDD phase header + `// THIS TEST WILL FAIL` comments in E2E ATDD spec [tests/e2e/story-4-1-implement-date-range-filter-and-presets-atdd.spec.ts] — **Fixed**: removed stale red-phase markers (6 occurrences); implementation is complete and all tests pass
+- [x] [Review][Patch] Stale `(RED PHASE)` in API test describe block name + `// THIS TEST WILL FAIL` comments [tests/api/story-4-1-earnings-context-atdd.spec.ts] — **Fixed**: renamed describe block and removed stale comments (2 occurrences)
+- [x] [Review][Defer] Calendar popover has no auto-close after both range dates are selected [src/components/DateRangeFilter.tsx] — deferred, pre-existing UX choice; no AC requires auto-close; can be addressed in Story 4.4 UX polish
+
 ### Change Log
 
 | Date | Change |
 |------|--------|
 | 2026-04-06 | Implemented Story 4.1: Created DateRangeFilter component, added setCustomDateRange action, replaced interim date Select, added i18n keys, added 2 Vitest unit tests + 8 ATDD tests. All 162 Vitest tests pass. 110 Playwright tests pass. |
+| 2026-04-06 | Code review (Story 4.1): 2 patch findings auto-fixed (stale TDD red-phase comments in test files). 1 deferred (popover auto-close UX). 2 dismissed (effect mount behavior, exhaustive switch). Story status → done. |

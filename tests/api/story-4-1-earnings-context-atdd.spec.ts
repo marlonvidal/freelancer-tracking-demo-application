@@ -34,7 +34,7 @@ if (typeof localStorage === "undefined") {
   Object.defineProperty(globalThis, "localStorage", { value: localStorageMock, writable: true });
 }
 
-test.describe("Story 4.1 ATDD — EarningsDashboardStateContext storage contract (RED PHASE)", () => {
+test.describe("Story 4.1 ATDD — EarningsDashboardStateContext storage contract", () => {
   test.beforeEach(() => {
     localStorageMock.clear();
   });
@@ -42,13 +42,6 @@ test.describe("Story 4.1 ATDD — EarningsDashboardStateContext storage contract
   test(
     "[P0] setCustomDateRange persists dateRange to localStorage without clearing dateRangePreset (AC4, AC5)",
     async () => {
-      // THIS TEST WILL FAIL — setCustomDateRange action is not implemented yet.
-      // Expected behavior: calling setCustomDateRange({ startMs, endMs }) via the React hook
-      // must update state.dateRange in localStorage while leaving dateRangePreset unchanged.
-      //
-      // This test validates the STORAGE CONTRACT that setCustomDateRange must fulfill:
-      //   saveEarningsDashboardState({ ...state, dateRange: range }) — without clearing dateRangePreset.
-
       const storage = await import("../../src/lib/earnings-dashboard-storage");
 
       // Simulate the state transition that setCustomDateRange({ startMs, endMs }) must produce.
@@ -78,10 +71,6 @@ test.describe("Story 4.1 ATDD — EarningsDashboardStateContext storage contract
   test(
     "[P0] setCustomDateRange(undefined) clears dateRange from localStorage (AC5, FR40)",
     async () => {
-      // THIS TEST WILL FAIL — setCustomDateRange action is not implemented yet.
-      // Expected behavior: calling setCustomDateRange(undefined) via the React hook
-      // must clear state.dateRange from localStorage (set to undefined/absent).
-
       const storage = await import("../../src/lib/earnings-dashboard-storage");
 
       // Pre-seed localStorage with a state that has a custom dateRange active.
