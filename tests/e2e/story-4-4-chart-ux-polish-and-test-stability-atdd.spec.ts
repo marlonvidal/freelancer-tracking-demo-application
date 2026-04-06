@@ -188,9 +188,7 @@ test.describe("Story 4.4 — Chart UX Polish and Test Stability", () => {
       await expect(page.getByTestId("earnings-dashboard")).toBeVisible();
 
       // Switch to project chart view
-      const chartSelect = page.getByLabel("Chart");
-      await chartSelect.click();
-      await page.getByRole("option", { name: "Project" }).click();
+      await page.getByTestId("chart-view-project").click();
 
       await expect(page.getByTestId("project-revenue-chart")).toBeVisible();
 

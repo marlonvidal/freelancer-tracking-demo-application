@@ -5,7 +5,6 @@ import {
   EarningsDashboardStateProvider,
   useEarningsDashboardState,
 } from '@/context/EarningsDashboardStateContext';
-import type { ActiveChartView } from '@/lib/earnings-dashboard-storage';
 import { calculateRevenueByCustomer, calculateRevenueByProject, calculateRevenueByTag, calculateSummaryMetrics, resolveDateRangeMs } from '@/lib/earnings-calculations';
 import CustomerRevenueChart from '@/components/CustomerRevenueChart';
 import ProjectRevenueChart from '@/components/ProjectRevenueChart';
@@ -16,13 +15,6 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { formatCurrency } from '@/lib/utils';
 
 const EarningsDashboardContent: React.FC = () => {
@@ -157,6 +149,7 @@ const EarningsDashboardContent: React.FC = () => {
           <div
             data-testid="earnings-metrics"
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
+            role="region"
             aria-live="polite"
             aria-label={t.earningsDashboardHeading}
           >
@@ -231,20 +224,31 @@ const EarningsDashboardContent: React.FC = () => {
           <BillableToggle />
 
           <div className="space-y-2">
-            <Label htmlFor="earnings-chart-view">{t.earningsChartViewLabel}</Label>
-            <Select
-              value={state.activeChart}
-              onValueChange={(v) => setActiveChartView(v as ActiveChartView)}
+            <Label>{t.earningsChartViewLabel}</Label>
+            <div
+              className="flex flex-wrap gap-2"
+              data-testid="chart-view-selector"
+              role="group"
+              aria-label={t.earningsChartViewLabel}
             >
-              <SelectTrigger id="earnings-chart-view" className="max-w-md">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="customer">{t.earningsChartCustomer}</SelectItem>
-                <SelectItem value="project">{t.earningsChartProject}</SelectItem>
-                <SelectItem value="tag">{t.earningsChartTag}</SelectItem>
-              </SelectContent>
-            </Select>
+              {(['customer', 'project', 'tag'] as const).map((chart) => (
+                <Button
+                  key={chart}
+                  type="button"
+                  variant={state.activeChart === chart ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveChartView(chart)}
+                  data-testid={`chart-view-${chart}`}
+                  aria-pressed={state.activeChart === chart}
+                >
+                  {chart === 'customer'
+                    ? t.earningsChartCustomer
+                    : chart === 'project'
+                    ? t.earningsChartProject
+                    : t.earningsChartTag}
+                </Button>
+              ))}
+            </div>
           </div>
 
           <Button type="button" variant="outline" className="w-fit" onClick={clearAppData}>

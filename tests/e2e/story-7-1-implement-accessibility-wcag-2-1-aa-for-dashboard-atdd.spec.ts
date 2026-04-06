@@ -140,16 +140,14 @@ test.describe("Story 7.1 — WCAG 2.1 AA Accessibility for Dashboard", () => {
         page.getByTestId("customer-revenue-chart").locator("h2"),
       ).toContainText("Revenue by Customer");
 
-      // Switch to project chart via chart view Select (Radix combobox — use click pattern)
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      // Switch to project chart via button group
+      await page.getByTestId("chart-view-project").click();
       await expect(
         page.getByTestId("project-revenue-chart").locator("h2"),
       ).toContainText("Revenue by Project");
 
       // Switch to tag chart
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      await page.getByTestId("chart-view-tag").click();
       await expect(
         page.getByTestId("tag-revenue-chart").locator("h2"),
       ).toContainText("Revenue by Tag");
@@ -175,13 +173,10 @@ test.describe("Story 7.1 — WCAG 2.1 AA Accessibility for Dashboard", () => {
   );
 
   test(
-    '[P0] Calculation error state has role="alert" (AC1/NFR-A1)',
+    "[P0] Corrupt storage data — dashboard falls back to default state without crashing (AC1/NFR-A1)",
     async ({ page }) => {
-      // Corrupt the kanban data so calculateSummaryMetrics throws.
-      // Note: loadState() catches JSON parse errors and falls back to getDefaultState()
-      // (5 sample tasks), so the calculation error path may not trigger from corrupt JSON alone.
-      // The test gracefully handles both outcomes: validates role="alert" when error IS rendered,
-      // or falls back to validating role="status" on the empty state.
+      // loadState() catches JSON.parse errors and returns getDefaultState() (5 sample tasks)
+      // This test verifies the fallback path: dashboard still renders, not blank or crashed
       await page.addInitScript(() => {
         localStorage.setItem("freelancer-kanban-data", "not-valid-json{{{");
       });
@@ -189,16 +184,9 @@ test.describe("Story 7.1 — WCAG 2.1 AA Accessibility for Dashboard", () => {
       await page.goto("/earnings");
       await expect(page.getByTestId("earnings-dashboard")).toBeVisible();
 
-      const errorEl = page.getByTestId("earnings-calculation-error");
-      if (await errorEl.isVisible()) {
-        await expect(errorEl).toHaveAttribute("role", "alert");
-      }
-
-      // If storage fallback kicks in and shows empty state, validate that role too
-      const emptyEl = page.getByTestId("earnings-empty-no-tasks");
-      if (await emptyEl.isVisible()) {
-        await expect(emptyEl).toHaveAttribute("role", "status");
-      }
+      // Storage layer falls back to default state — heading and metrics grid must be visible
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.getByTestId("earnings-metrics")).toBeVisible();
     },
   );
 
@@ -259,7 +247,7 @@ test.describe("Story 7.1 — WCAG 2.1 AA Accessibility for Dashboard", () => {
   );
 
   test(
-    "[P1] Chart view Select is reachable via focus and operable via keyboard (AC2/FR33/NFR-A7)",
+    "[P1] Chart view button group is reachable via focus and operable via keyboard (AC2/FR33/NFR-A7)",
     async ({ page }) => {
       await page.addInitScript(() => {
         localStorage.setItem("app-language", "en");
@@ -268,13 +256,13 @@ test.describe("Story 7.1 — WCAG 2.1 AA Accessibility for Dashboard", () => {
       await page.goto("/earnings");
       await expect(page.getByTestId("earnings-dashboard")).toBeVisible();
 
-      // Chart select control (Radix renders with role="combobox") is focusable
-      const chartSelect = page.getByRole("combobox");
-      await expect(chartSelect).toBeVisible();
+      // Customer chart button is visible and focusable (keyboard reachability)
+      const customerBtn = page.getByTestId("chart-view-customer");
+      await expect(customerBtn).toBeVisible();
 
-      // Verify element can receive focus programmatically (keyboard reachability)
-      await chartSelect.focus();
-      await expect(chartSelect).toBeFocused();
+      // Verify element can receive focus programmatically
+      await customerBtn.focus();
+      await expect(customerBtn).toBeFocused();
     },
   );
 

@@ -117,6 +117,10 @@ export interface Translations {
   // Accessibility
   languageToggleLabel: string;
   earningsChartSrDataSummary: string;
+
+  // Color scheme toggle
+  lightModeLabel: string;
+  darkModeLabel: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -214,6 +218,8 @@ export const translations: Record<Language, Translations> = {
     earningsCalculationError: 'Unable to calculate metrics. Try refreshing the page.',
     languageToggleLabel: 'Language',
     earningsChartSrDataSummary: 'Data summary',
+    lightModeLabel: 'Light mode',
+    darkModeLabel: 'Dark mode',
   },
   pt: {
     totalRevenue: 'Receita Total',
@@ -309,6 +315,8 @@ export const translations: Record<Language, Translations> = {
     earningsCalculationError: 'Não foi possível calcular as métricas. Tente atualizar a página.',
     languageToggleLabel: 'Idioma',
     earningsChartSrDataSummary: 'Resumo dos dados',
+    lightModeLabel: 'Modo claro',
+    darkModeLabel: 'Modo escuro',
   },
 };
 

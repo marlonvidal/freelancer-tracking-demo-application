@@ -115,9 +115,8 @@ test.describe("Story 3.1 ATDD — Customer Revenue Chart", () => {
       // Default customer view — chart must be visible first
       await expect(page.getByTestId("customer-revenue-chart")).toBeVisible();
 
-      // Switch chart view selector to "Project" via shadcn Select
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      // Switch chart view selector to "Project" via button group
+      await page.getByTestId("chart-view-project").click();
 
       // Customer chart must no longer be in the DOM / visible
       await expect(page.getByTestId("customer-revenue-chart")).not.toBeVisible();
@@ -255,8 +254,7 @@ test.describe("Story 3.1 ATDD — Customer Revenue Chart", () => {
       await expect(page.getByTestId("customer-revenue-chart")).toBeVisible();
 
       // Switch to Tag view — filter controls must still be visible
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      await page.getByTestId("chart-view-tag").click();
 
       // Customer chart hidden
       await expect(page.getByTestId("customer-revenue-chart")).not.toBeVisible();
@@ -367,8 +365,8 @@ test.describe("Story 3.1 ATDD — Customer Revenue Chart", () => {
       });
       await blockKnownThirdPartyHosts(page);
 
-      const start = Date.now();
       await page.goto("/earnings");
+      const start = Date.now();
 
       // Chart SVG must be visible within the 2-second budget
       // Use .first() because recharts Legend also renders small SVG icons

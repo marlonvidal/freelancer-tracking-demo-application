@@ -122,6 +122,7 @@ const Header: React.FC<HeaderProps> = ({ onAddTask }) => {
           variant="ghost"
           size="icon"
           onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
+          aria-label={state.isDarkMode ? t.lightModeLabel : t.darkModeLabel}
         >
           {state.isDarkMode ? (
             <Sun className="h-4 w-4" />

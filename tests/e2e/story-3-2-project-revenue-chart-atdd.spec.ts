@@ -86,10 +86,8 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      // Switch to Project chart view via shadcn Select (id="earnings-chart-view")
-      // t.earningsChartViewLabel = 'Chart', t.earningsChartProject = 'Project'
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      // Switch to Project chart view via button group
+      await page.getByTestId("chart-view-project").click();
 
       // EarningsDashboard must conditionally render ProjectRevenueChart
       // ProjectRevenueChart must render data-testid="project-revenue-chart"
@@ -110,8 +108,7 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      await page.getByTestId("chart-view-project").click();
 
       // recharts PieChart renders an SVG element — confirms chart is mounted
       // Use .first() because recharts Legend also renders small SVG icons per item
@@ -128,13 +125,11 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       await page.goto("/earnings");
 
       // Switch to Project view
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      await page.getByTestId("chart-view-project").click();
       await expect(page.getByTestId("project-revenue-chart")).toBeVisible();
 
       // Switch back to Customer view — project chart must disappear
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Customer" }).click();
+      await page.getByTestId("chart-view-customer").click();
 
       // CustomerRevenueChart was rendered before; ProjectRevenueChart must be gone
       await expect(page.getByTestId("project-revenue-chart")).not.toBeVisible();
@@ -157,8 +152,7 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      await page.getByTestId("chart-view-project").click();
 
       // Chart title must use t.earningsProjectChartTitle = 'Revenue by Project'
       // Scoped to chart container to avoid collisions with other headings on the page
@@ -181,8 +175,7 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      await page.getByTestId("chart-view-project").click();
 
       // Container must still render (no-data variant uses same data-testid)
       await expect(page.getByTestId("project-revenue-chart")).toBeVisible();
@@ -211,8 +204,7 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      await page.getByTestId("chart-view-project").click();
 
       // Use .first() — recharts Legend renders small SVG icons per item
       const chartSvg = page
@@ -245,8 +237,7 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       await expect(page.getByTestId("customer-revenue-chart")).toBeVisible();
 
       // Switch to Project view
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      await page.getByTestId("chart-view-project").click();
 
       // Customer chart is gone; project chart appears
       await expect(page.getByTestId("customer-revenue-chart")).not.toBeVisible();
@@ -300,10 +291,8 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      // PT label for chart selector: t.earningsChartViewLabel = 'Gráfico'
-      // PT option for project view: t.earningsChartProject = 'Projeto'
-      await page.getByLabel("Gráfico").click();
-      await page.getByRole("option", { name: "Projeto" }).click();
+      // PT locale: same data-testid as EN, button group is language-independent
+      await page.getByTestId("chart-view-project").click();
 
       // Portuguese translation: t.earningsProjectChartTitle = 'Receita por Projeto'
       await expect(
@@ -356,8 +345,7 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       await page.goto("/earnings");
       await expect(page.getByTestId('earnings-dashboard')).toBeVisible();
       const start = Date.now();
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      await page.getByTestId("chart-view-project").click();
 
       // Chart SVG must be visible within the 2-second budget (AC5, NFR-P1)
       // Use .first() because recharts Legend also renders small SVG icons
@@ -382,8 +370,7 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      await page.getByTestId("chart-view-project").click();
 
       // Both project legend items must be visible before toggle
       await expect(

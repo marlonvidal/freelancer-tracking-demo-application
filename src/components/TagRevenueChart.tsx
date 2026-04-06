@@ -39,7 +39,10 @@ const TagRevenueChart: React.FC<TagRevenueChartProps> = ({ data }) => {
     [data],
   );
 
-  const visibleData = data.filter((row) => !hiddenKeys.has(row.tag));
+  const visibleData = useMemo(
+    () => data.filter((row) => !hiddenKeys.has(row.tag)),
+    [data, hiddenKeys],
+  );
 
   const handleLegendClick = (entry: { value: string }) => {
     const key = entry.value;
@@ -67,7 +70,6 @@ const TagRevenueChart: React.FC<TagRevenueChartProps> = ({ data }) => {
       <ul
         className="sr-only"
         aria-labelledby="tag-chart-heading"
-        aria-label={`${t.earningsTagChartTitle} — ${t.earningsChartSrDataSummary}`}
       >
         {data.map((row) => {
           const pct = total > 0 ? ((row.totalRevenue / total) * 100).toFixed(1) : '0.0';

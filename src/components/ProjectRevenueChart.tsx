@@ -39,7 +39,10 @@ const ProjectRevenueChart: React.FC<ProjectRevenueChartProps> = ({ data }) => {
     [data],
   );
 
-  const visibleData = data.filter((row) => !hiddenKeys.has(row.columnTitle));
+  const visibleData = useMemo(
+    () => data.filter((row) => !hiddenKeys.has(row.columnTitle)),
+    [data, hiddenKeys],
+  );
 
   const handleLegendClick = (entry: { value: string }) => {
     const key = entry.value;
@@ -67,7 +70,6 @@ const ProjectRevenueChart: React.FC<ProjectRevenueChartProps> = ({ data }) => {
       <ul
         className="sr-only"
         aria-labelledby="project-chart-heading"
-        aria-label={`${t.earningsProjectChartTitle} — ${t.earningsChartSrDataSummary}`}
       >
         {data.map((row) => {
           const pct = total > 0 ? ((row.totalRevenue / total) * 100).toFixed(1) : '0.0';

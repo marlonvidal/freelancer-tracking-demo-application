@@ -1,6 +1,6 @@
 # Story 7.2: Final Polish & Deferred Work Resolution
 
-Status: ready-for-dev
+Status: review
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created -->
 
@@ -748,22 +748,52 @@ Target: single clean commit `"Implemented story 7.2"` bundling all changed/creat
 
 ### Agent Model Used
 
-_To be filled by dev agent_
+claude-4.6-sonnet-medium-thinking
 
 ### Completion Notes List
 
-_To be filled by dev agent_
+- AC1 ✅: Added `lightModeLabel`/`darkModeLabel` to `Translations` interface and both EN/PT locales in `LanguageContext.tsx`. Added `aria-label={state.isDarkMode ? t.lightModeLabel : t.darkModeLabel}` to dark mode button in `Header.tsx`. `t` variable confirmed safe at call site (no shadowing).
+- AC2 ✅: Added `role="region"` to the metrics `<div>` in `EarningsDashboard.tsx`.
+- AC3 ✅: Added `setOpen(false)` in the `useEffect` if-block in `DateRangeFilter.tsx` — one-line fix resolves D4.
+- AC4 ✅: Replaced `<Select>` chart view with button group (`role="group"`, `data-testid="chart-view-{chart}"`, `aria-pressed`). Removed unused Select imports. Removed `ActiveChartView` type import (no longer explicitly referenced). Updated 7 test files that used old `page.getByLabel("Chart")` + `page.getByRole("option")` pattern.
+- AC5 ✅: Memoized `visibleData` with `useMemo([data, hiddenKeys])` in all three chart components. `useMemo` was already imported in all three files.
+- AC6 ✅: Removed redundant `aria-label` from `<ul className="sr-only">` in all three chart components. `aria-labelledby` retained.
+- AC7 ✅: Moved `const start = Date.now()` to after `await page.goto()` in story-3-1, story-3-3, story-3-4 performance tests (story-3-2 was already correct). Also updated chart switch interactions in these files to use button data-testids.
+- AC8 ✅: Rewrote zombie test in story-7-1 spec — replaced conditional if/isVisible pattern with real assertion verifying storage fallback renders dashboard safely. Updated chart-switch test and keyboard nav test to use button data-testids instead of combobox.
+- AC9 ✅: Changed `billableTimeSpentSec += task.timeSpent` to `billableTimeSpentSec += Math.max(0, task.timeSpent)` in `calculateSummaryMetrics`. Prevents negative `averageHourlyRate`.
+
+**Additional fixes required:** AC4 chart selector change broke many existing tests across story-3-1, 3-2, 3-3, 3-4, 4-4, earnings-dashboard-persistence, and EarningsDashboard unit test. All updated to use button group data-testids.
+
+**Test results:** 306 unit tests passing, 167 E2E tests passing. No regressions.
 
 ### File List
 
-_To be filled by dev agent_
+- `src/context/LanguageContext.tsx` — Added `lightModeLabel`/`darkModeLabel` to interface and both locales
+- `src/components/Header.tsx` — Added `aria-label` to dark mode button
+- `src/pages/EarningsDashboard.tsx` — Added `role="region"` to metrics div; converted chart selector to button group; removed Select imports and ActiveChartView import
+- `src/components/CustomerRevenueChart.tsx` — Memoized `visibleData`; removed `aria-label` dead code from sr-only `<ul>`
+- `src/components/ProjectRevenueChart.tsx` — Same pattern as CustomerRevenueChart
+- `src/components/TagRevenueChart.tsx` — Same pattern as CustomerRevenueChart
+- `src/components/DateRangeFilter.tsx` — Added `setOpen(false)` in useEffect (D4 one-line fix)
+- `src/lib/earnings-calculations.ts` — `Math.max(0, task.timeSpent)` guard in `calculateSummaryMetrics`
+- `src/pages/EarningsDashboard.test.tsx` — Updated combobox assertion to use button group aria-pressed
+- `tests/e2e/story-7-2-final-polish-deferred-work-resolution-atdd.spec.ts` — New ATDD spec (already existed from ATDD phase)
+- `tests/e2e/story-7-1-implement-accessibility-wcag-2-1-aa-for-dashboard-atdd.spec.ts` — Rewrote zombie test; updated chart-switch and keyboard nav tests
+- `tests/e2e/story-3-1-customer-revenue-chart-atdd.spec.ts` — Fixed chart switch interactions; moved performance timer after goto
+- `tests/e2e/story-3-2-project-revenue-chart-atdd.spec.ts` — Fixed chart switch interactions; updated PT locale pattern
+- `tests/e2e/story-3-3-tag-revenue-chart-atdd.spec.ts` — Fixed chart switch interactions; moved performance timer after goto; updated PT locale pattern
+- `tests/e2e/story-3-4-chart-responsiveness-performance-atdd.spec.ts` — Fixed chart switch interactions; moved performance timer after goto
+- `tests/e2e/story-4-4-chart-ux-polish-and-test-stability-atdd.spec.ts` — Fixed chart switch interaction
+- `tests/e2e/earnings-dashboard-persistence.spec.ts` — Fixed combobox assertion to use button group
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` — Updated status to review
 
 ### Review Findings
 
-_To be filled by dev agent_
+_To be filled by code reviewer_
 
 ### Change Log
 
 | Date | Change |
 |------|--------|
 | 2026-04-06 | Story 7.2 created: ready-for-dev. Resolves all deferred items from Epic 4 retro (D4, D5) and Stories 5.1–7.1 review deferrals. 14 files to change/create. Final story before MVP release. |
+| 2026-04-06 | Story 7.2 implemented: all 9 ACs resolved. 306 unit tests passing, 167 E2E tests passing. Status → review. |

@@ -116,8 +116,7 @@ test.describe("Story 3.3 ATDD — Tag Revenue Chart", () => {
 
       // Switch to Tag chart view via shadcn Select (id="earnings-chart-view")
       // t.earningsChartViewLabel = 'Chart', t.earningsChartTag = 'Tag'
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      await page.getByTestId("chart-view-tag").click();
 
       // EarningsDashboard must conditionally render TagRevenueChart
       // TagRevenueChart must render data-testid="tag-revenue-chart"
@@ -138,8 +137,7 @@ test.describe("Story 3.3 ATDD — Tag Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      await page.getByTestId("chart-view-tag").click();
 
       // recharts PieChart renders an SVG element — confirms chart is mounted
       // Use .first() because recharts Legend also renders small SVG icons per item
@@ -156,13 +154,11 @@ test.describe("Story 3.3 ATDD — Tag Revenue Chart", () => {
       await page.goto("/earnings");
 
       // Switch to Tag view
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      await page.getByTestId("chart-view-tag").click();
       await expect(page.getByTestId("tag-revenue-chart")).toBeVisible();
 
       // Switch back to Customer view — tag chart must disappear
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Customer" }).click();
+      await page.getByTestId("chart-view-customer").click();
 
       // TagRevenueChart must be gone; CustomerRevenueChart takes over
       await expect(page.getByTestId("tag-revenue-chart")).not.toBeVisible();
@@ -185,8 +181,7 @@ test.describe("Story 3.3 ATDD — Tag Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      await page.getByTestId("chart-view-tag").click();
 
       // Chart title must use t.earningsTagChartTitle = 'Revenue by Tag'
       // Scoped to chart container to avoid collisions with other headings on the page
@@ -209,8 +204,7 @@ test.describe("Story 3.3 ATDD — Tag Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      await page.getByTestId("chart-view-tag").click();
 
       // Container must still render (no-data variant uses same data-testid)
       await expect(page.getByTestId("tag-revenue-chart")).toBeVisible();
@@ -239,8 +233,7 @@ test.describe("Story 3.3 ATDD — Tag Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      await page.getByTestId("chart-view-tag").click();
 
       // Use .first() — recharts Legend renders small SVG icons per item
       const chartSvg = page
@@ -275,8 +268,7 @@ test.describe("Story 3.3 ATDD — Tag Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      await page.getByTestId("chart-view-tag").click();
 
       // chart SVG must be visible (data is present — one untagged task)
       await expect(
@@ -303,8 +295,7 @@ test.describe("Story 3.3 ATDD — Tag Revenue Chart", () => {
       await expect(page.getByTestId("earnings-dashboard")).toBeVisible();
 
       // Switch to Tag view
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      await page.getByTestId("chart-view-tag").click();
 
       // Earnings dashboard container itself must still be visible — confirms
       // date range and billable filter state is preserved (not reset on chart switch)
@@ -330,10 +321,8 @@ test.describe("Story 3.3 ATDD — Tag Revenue Chart", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      // PT label for chart selector: t.earningsChartViewLabel = 'Gráfico'
-      // PT option for tag view: t.earningsChartTag = 'Tag' (same in both languages)
-      await page.getByLabel("Gráfico").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      // PT locale: same data-testid as EN, button group is language-independent
+      await page.getByTestId("chart-view-tag").click();
 
       // Portuguese translation: t.earningsTagChartTitle = 'Receita por Tag'
       await expect(
@@ -378,10 +367,9 @@ test.describe("Story 3.3 ATDD — Tag Revenue Chart", () => {
       });
       await blockKnownThirdPartyHosts(page);
 
-      const start = Date.now();
       await page.goto("/earnings");
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      const start = Date.now();
+      await page.getByTestId("chart-view-tag").click();
 
       // Chart SVG must be visible within the 2-second budget (AC8, NFR-P1)
       // Use .first() because recharts Legend also renders small SVG icons

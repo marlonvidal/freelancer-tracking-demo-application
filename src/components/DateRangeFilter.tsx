@@ -57,6 +57,7 @@ const DateRangeFilter: React.FC = () => {
         startMs: startOfDay(calendarRange.from).getTime(),
         endMs: endOfDay(calendarRange.to).getTime(),
       });
+      setOpen(false);
     }
   }, [calendarRange, setCustomDateRange]);
 

@@ -82,9 +82,8 @@ describe("EarningsDashboard", () => {
     expect(screen.getByTestId("billable-toggle-billable")).toBeInTheDocument();
     expect(screen.getByTestId("billable-toggle-all")).toBeInTheDocument();
     expect(screen.getByTestId("billable-toggle-nonBillable")).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: /chart/i })).toHaveTextContent(
-      /^project$/i,
-    );
+    // Chart view now uses button group (Story 7.2 AC4) — project button should be pressed
+    expect(screen.getByTestId("chart-view-project")).toHaveAttribute("aria-pressed", "true");
   });
 
   // ── Story 2.2: Summary Metrics Cards ────────────────────────────────────────

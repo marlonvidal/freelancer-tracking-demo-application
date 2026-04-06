@@ -323,7 +323,7 @@ export function calculateSummaryMetrics(
     if (task.isBillable) {
       billableRevenue += revenue;
       billableTaskCount += 1;
-      billableTimeSpentSec += task.timeSpent;
+      billableTimeSpentSec += Math.max(0, task.timeSpent);
     }
   }
 

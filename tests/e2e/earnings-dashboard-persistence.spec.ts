@@ -108,9 +108,7 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     await page.goto("/earnings");
     await expect(page.getByTestId("earnings-dashboard")).toBeVisible();
 
-    const chartControl = page.getByRole("combobox", { name: /chart/i });
-    await chartControl.click();
-    await page.getByRole("option", { name: /^project$/i }).click();
+    await page.getByTestId("chart-view-project").click();
 
     const stored = await readEarningsDashboardState(page);
     expect(stored).toMatchObject({ activeChart: "project" });
@@ -146,6 +144,7 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     await expect(page.getByTestId("preset-last30")).toBeVisible();
     // Billable filter now uses BillableToggle buttons (Story 4.2) — default after clear is 'all'
     await expect(page.getByTestId("billable-toggle-all")).toBeVisible();
-    await expect(page.getByRole("combobox", { name: /chart/i })).toContainText(/^customer$/i);
+    // Chart view now uses button group (Story 7.2 AC4) — customer button should be pressed by default
+    await expect(page.getByTestId("chart-view-customer")).toHaveAttribute("aria-pressed", "true");
   });
 });

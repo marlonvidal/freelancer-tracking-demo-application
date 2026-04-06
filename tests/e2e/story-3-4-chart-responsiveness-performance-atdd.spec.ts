@@ -196,9 +196,8 @@ test.describe("Story 3.4 ATDD — Chart Responsiveness and Performance", () => {
       );
       await blockKnownThirdPartyHosts(page);
 
-      // Timer starts before goto — matches established pattern from Stories 3.1–3.3
-      const start = Date.now();
       await page.goto("/earnings");
+      const start = Date.now();
 
       // Customer chart SVG (default view) must be visible within 2-second budget
       // Use .first() — recharts Legend renders additional SVG icons per slice
@@ -259,10 +258,9 @@ test.describe("Story 3.4 ATDD — Chart Responsiveness and Performance", () => {
       // Wait for Customer chart to be ready before starting the timer
       await expect(page.getByTestId("customer-revenue-chart")).toBeVisible();
 
-      // Timer wraps the full switch interaction (click + option select + chart render)
+      // Timer wraps the full switch interaction (click + chart render)
       const switchStart = Date.now();
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Project" }).click();
+      await page.getByTestId("chart-view-project").click();
       await expect(page.getByTestId("project-revenue-chart")).toBeVisible();
       expect(Date.now() - switchStart).toBeLessThan(500);
     },
@@ -311,9 +309,8 @@ test.describe("Story 3.4 ATDD — Chart Responsiveness and Performance", () => {
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      // Switch to Tag view (shadcn Select — label: 'Chart', option: 'Tag')
-      await page.getByLabel("Chart").click();
-      await page.getByRole("option", { name: "Tag" }).click();
+      // Switch to Tag view via button group
+      await page.getByTestId("chart-view-tag").click();
 
       const chartSvg = page
         .locator('[data-testid="tag-revenue-chart"] svg')
