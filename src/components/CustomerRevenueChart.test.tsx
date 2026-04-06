@@ -227,6 +227,17 @@ describe("CustomerRevenueChart", () => {
       // pt-BR: "US$ 100,00" or "R$ 100,00" — contains comma decimal
       expect(items[0].textContent).toMatch(/,\d{2}/);
     });
+
+    it("[P0] sr-only list does NOT have redundant aria-label attribute — aria-labelledby takes precedence (AC6/Story 7.2)", () => {
+      // Story 7.2 AC6: removed the dead aria-label from sr-only <ul> (aria-labelledby takes ARIA precedence)
+      const { container } = renderChart([singleRow]);
+      const srList = container.querySelector("ul.sr-only");
+      expect(srList).toBeInTheDocument();
+      // aria-labelledby must still be present (retained from Story 7.1)
+      expect(srList).toHaveAttribute("aria-labelledby", "customer-chart-heading");
+      // aria-label must be absent (removed as dead code in Story 7.2)
+      expect(srList).not.toHaveAttribute("aria-label");
+    });
   });
 
   // ── Story 4.4 — all-hidden guard (AC3) ───────────────────────────────────────

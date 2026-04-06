@@ -68,3 +68,9 @@
 - **Dark mode toggle button missing `aria-label`** â€” `Header.tsx:121-131`: The dark mode toggle renders an icon-only button with no accessible name (no `aria-label`, no `title`). WCAG 2.1 SC 4.1.2 gap. Not in Story 7.1 task scope. Add `aria-label={state.isDarkMode ? t.lightModeLabel : t.darkModeLabel}` (with matching translation keys) in a follow-up accessibility story.
 
 - **`aria-label` without `role="region"` on metrics `<div>`** â€” `EarningsDashboard.tsx:159-162`: `aria-label={t.earningsDashboardHeading}` on a generic `<div>` without `role="region"` doesn't create a named landmark in the accessibility tree for most screen readers. The `aria-live="polite"` behavior works correctly regardless. Add `role="region"` if named-region navigation is needed (screen reader users using "R" to jump regions).
+
+## Deferred from: code review of 7-2-final-polish-deferred-work-resolution.md (2026-04-06)
+
+- **utton[name] selector in calendar auto-close E2E test may be fragile** — 	ests/e2e/story-7-2-final-polish-deferred-work-resolution-atdd.spec.ts: The AC3 calendar test selects day buttons via page.locator('button[name]').filter({ hasText: /^\d+\$/ }). If eact-day-picker changes its day button attributes in a future upgrade the selector may fail silently. Tests currently pass. Address in a future test-selector hardening pass if flakiness is observed.
+
+- **Math.max(0, task.timeSpent) does not guard against NaN timeSpent** — src/lib/earnings-calculations.ts:326: AC9 required clamping negatives to 0; Math.max(0, NaN) returns NaN which would propagate to verageHourlyRate. NaN timeSpent would be an upstream data integrity issue (task creation validates inputs). Address in a future data-validation hardening story if NaN inputs become a concern.

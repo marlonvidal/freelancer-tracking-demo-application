@@ -553,6 +553,33 @@ describe("EarningsDashboard", () => {
     expect(metricsGrid).toHaveAttribute("aria-live", "polite");
   });
 
+  // ── Story 7.2 — Final Polish & Deferred Work Resolution ─────────────────────
+
+  it("[P0] earnings-metrics has role='region' making it a named ARIA landmark (AC2/WCAG-1.3.6/Story 7.2)", () => {
+    renderEarningsRoute();
+    const metricsGrid = screen.getByTestId("earnings-metrics");
+    expect(metricsGrid).toHaveAttribute("role", "region");
+  });
+
+  it("[P0] chart-view-selector wrapper has role='group' (AC4/D5/Story 7.2)", () => {
+    renderEarningsRoute();
+    const selector = screen.getByTestId("chart-view-selector");
+    expect(selector).toHaveAttribute("role", "group");
+  });
+
+  it("[P0] all three chart view buttons are present with correct data-testids (AC4/D5/Story 7.2)", () => {
+    renderEarningsRoute();
+    expect(screen.getByTestId("chart-view-customer")).toBeInTheDocument();
+    expect(screen.getByTestId("chart-view-project")).toBeInTheDocument();
+    expect(screen.getByTestId("chart-view-tag")).toBeInTheDocument();
+  });
+
+  it("[P1] chart view control is buttons not a combobox — no <Select> combobox exists (AC4/D5/Story 7.2)", () => {
+    renderEarningsRoute();
+    // The old <Select> combobox was replaced by a button group in Story 7.2
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+  });
+
   it("[P1] renders project chart heading 'Revenue by Project' with seeded task and activeChart is 'project' (Story 3.2, AC1)", () => {
     const now = Date.now();
     localStorage.setItem(

@@ -140,4 +140,34 @@ describe("Header — Story 1.2 navigation", () => {
     const earningsLink = screen.getByRole("link", { name: /earnings/i });
     expect(earningsLink).toHaveAttribute("href", "/earnings");
   });
+
+  // ── Story 7.2 — Dark mode button locale-aware aria-label (AC1/WCAG-4.1.2) ────
+
+  it("[P0] dark mode button has aria-label='Dark mode' in English light mode state (AC1/WCAG-4.1.2/Story 7.2)", () => {
+    renderHeader();
+    // Default state: isDarkMode=false → button label is the action to enter dark mode
+    const darkModeBtn = screen.getByRole("button", { name: "Dark mode" });
+    expect(darkModeBtn).toBeInTheDocument();
+  });
+
+  it("[P0] dark mode button has aria-label='Modo escuro' in Portuguese light mode state (AC1/WCAG-4.1.2/Story 7.2)", () => {
+    localStorage.setItem("app-language", "pt");
+    renderHeader();
+    const darkModeBtn = screen.getByRole("button", { name: "Modo escuro" });
+    expect(darkModeBtn).toBeInTheDocument();
+  });
+
+  it("[P1] dark mode button aria-label changes to 'Light mode' after toggling to dark mode (AC1/Story 7.2)", () => {
+    renderHeader();
+    // Initially in light mode — button announces action to switch to dark mode
+    const darkModeBtn = screen.getByRole("button", { name: "Dark mode" });
+    expect(darkModeBtn).toBeInTheDocument();
+
+    // Click to toggle into dark mode
+    fireEvent.click(darkModeBtn);
+
+    // Now in dark mode — button announces action to switch back to light mode
+    const lightModeBtn = screen.getByRole("button", { name: "Light mode" });
+    expect(lightModeBtn).toBeInTheDocument();
+  });
 });
