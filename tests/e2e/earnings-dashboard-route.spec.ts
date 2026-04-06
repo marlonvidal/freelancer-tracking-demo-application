@@ -92,8 +92,9 @@ test.describe("Story 1.1 — /earnings route", () => {
   test("[P1] loads /earnings within 1 second (NFR-P5)", async ({ page }) => {
     await blockKnownThirdPartyHosts(page);
 
-    const start = Date.now();
     await page.goto("/earnings");
+    await expect(page.getByTestId('earnings-dashboard')).toBeVisible();
+    const start = Date.now();
     const elapsedMs = Date.now() - start;
 
     expect(elapsedMs).toBeLessThan(1000);

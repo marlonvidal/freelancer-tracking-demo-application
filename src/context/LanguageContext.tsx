@@ -108,6 +108,7 @@ export interface Translations {
   earningsChartNoData: string;
   earningsDateRangeCustom: string;
   earningsPickDateRange: string;
+  earningsChartAllHidden: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -198,6 +199,7 @@ export const translations: Record<Language, Translations> = {
     earningsChartNoData: 'No data for this period',
     earningsDateRangeCustom: 'Custom range',
     earningsPickDateRange: 'Pick a date range',
+    earningsChartAllHidden: 'No visible data — click a legend item to restore',
   },
   pt: {
     totalRevenue: 'Receita Total',
@@ -286,6 +288,7 @@ export const translations: Record<Language, Translations> = {
     earningsChartNoData: 'Sem dados para este período',
     earningsDateRangeCustom: 'Intervalo personalizado',
     earningsPickDateRange: 'Escolha um intervalo de datas',
+    earningsChartAllHidden: 'Nenhum dado visível — clique em um item da legenda para restaurar',
   },
 };
 

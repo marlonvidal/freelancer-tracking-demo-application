@@ -163,4 +163,50 @@ describe("TagRevenueChart", () => {
       ).toBeInTheDocument();
     });
   });
+
+  // ── Story 4.4 — all-hidden guard (AC3) ───────────────────────────────────────
+  // Verifies the new visibleData.length === 0 guard does not falsely trigger.
+  // The interaction that produces the hidden state (clicking legend items) is
+  // covered at E2E level by story-4-4-...-atdd.spec.ts (requires real browser
+  // for recharts SVG legend clicks). These unit tests guard the boundary condition.
+
+  describe("Story 4.4 — all-hidden guard (AC3)", () => {
+    it("[P1] does not render chart-all-hidden-message when data items are all visible", () => {
+      renderChart([singleRow]);
+      expect(
+        screen.queryByTestId("chart-all-hidden-message"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("[P1] does not render chart-all-hidden-message in the no-data empty state", () => {
+      // data.length === 0 triggers the 'earningsChartNoData' empty state, NOT the
+      // all-hidden message. The two empty states must remain distinct (AC3 dev notes).
+      renderChart([]);
+      expect(
+        screen.queryByTestId("chart-all-hidden-message"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("[P1] does not render chart-all-hidden-message for multiple visible tags", () => {
+      renderChart(multipleRows);
+      expect(
+        screen.queryByTestId("chart-all-hidden-message"),
+      ).not.toBeInTheDocument();
+    });
+
+    it('[P1] does not render chart-all-hidden-message for "Untagged" sentinel entry', () => {
+      renderChart([untaggedRow]);
+      expect(
+        screen.queryByTestId("chart-all-hidden-message"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("[P2] does not render chart-all-hidden-message in Portuguese locale with data", () => {
+      localStorage.setItem("app-language", "pt");
+      renderChart([singleRow]);
+      expect(
+        screen.queryByTestId("chart-all-hidden-message"),
+      ).not.toBeInTheDocument();
+    });
+  });
 });

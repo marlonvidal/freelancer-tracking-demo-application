@@ -353,8 +353,9 @@ test.describe("Story 3.2 ATDD — Project Revenue Chart", () => {
       });
       await blockKnownThirdPartyHosts(page);
 
-      const start = Date.now();
       await page.goto("/earnings");
+      await expect(page.getByTestId('earnings-dashboard')).toBeVisible();
+      const start = Date.now();
       await page.getByLabel("Chart").click();
       await page.getByRole("option", { name: "Project" }).click();
 

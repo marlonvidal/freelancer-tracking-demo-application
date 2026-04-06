@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   PieChart,
   Pie,
@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useLanguage } from '@/context/LanguageContext';
+import { formatCurrency } from '@/lib/utils';
 import type { RevenueByProjectRow } from '@/lib/earnings-calculations';
 
 interface ProjectRevenueChartProps {
@@ -20,12 +21,13 @@ const CHART_COLORS = [
   '#f97316', '#06b6d4',
 ];
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-
 const ProjectRevenueChart: React.FC<ProjectRevenueChartProps> = ({ data }) => {
   const { t } = useLanguage();
   const [hiddenKeys, setHiddenKeys] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setHiddenKeys(new Set());
+  }, [data]);
 
   const colorMap = useMemo(
     () => new Map(data.map((row, i) => [row.columnTitle, CHART_COLORS[i % CHART_COLORS.length]])),
@@ -60,55 +62,64 @@ const ProjectRevenueChart: React.FC<ProjectRevenueChartProps> = ({ data }) => {
   return (
     <div data-testid="project-revenue-chart" className="space-y-2">
       <h2 className="text-lg font-semibold">{t.earningsProjectChartTitle}</h2>
-      <ResponsiveContainer width="100%" height={320}>
-        <PieChart>
-          <Pie
-            data={visibleData}
-            dataKey="totalRevenue"
-            nameKey="columnTitle"
-            cx="50%"
-            cy="50%"
-            outerRadius="70%"
-            isAnimationActive={false}
-          >
-            {visibleData.map((entry) => (
-              <Cell
-                key={`cell-${entry.columnId}`}
-                fill={colorMap.get(entry.columnTitle) ?? '#6366f1'}
-              />
-            ))}
-          </Pie>
-          <Tooltip
-            content={({ active, payload }) => {
-              if (!active || !payload?.length) return null;
-              const row = payload[0].payload as RevenueByProjectRow;
-              const pct = total > 0 ? ((row.totalRevenue / total) * 100).toFixed(1) : '0.0';
-              return (
-                <div className="rounded-md border bg-popover p-2 text-sm shadow-md">
-                  <p className="font-medium">{row.columnTitle}</p>
-                  <p className="text-muted-foreground">
-                    {formatCurrency(row.totalRevenue)} ({pct}%)
-                  </p>
-                </div>
-              );
-            }}
-          />
-          <Legend
-            onClick={handleLegendClick}
-            formatter={(value: string) => (
-              <span
-                style={{
-                  textDecoration: hiddenKeys.has(value) ? 'line-through' : 'none',
-                  opacity: hiddenKeys.has(value) ? 0.5 : 1,
-                  cursor: 'pointer',
-                }}
-              >
-                {value}
-              </span>
-            )}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+      {visibleData.length === 0 ? (
+        <div
+          data-testid="chart-all-hidden-message"
+          className="flex items-center justify-center h-48 rounded-lg border border-dashed"
+        >
+          <p className="text-muted-foreground text-sm">{t.earningsChartAllHidden}</p>
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height={320}>
+          <PieChart>
+            <Pie
+              data={visibleData}
+              dataKey="totalRevenue"
+              nameKey="columnTitle"
+              cx="50%"
+              cy="50%"
+              outerRadius="70%"
+              isAnimationActive={false}
+            >
+              {visibleData.map((entry) => (
+                <Cell
+                  key={`cell-${entry.columnId}`}
+                  fill={colorMap.get(entry.columnTitle) ?? '#6366f1'}
+                />
+              ))}
+            </Pie>
+            <Tooltip
+              content={({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const row = payload[0].payload as RevenueByProjectRow;
+                const pct = total > 0 ? ((row.totalRevenue / total) * 100).toFixed(1) : '0.0';
+                return (
+                  <div className="rounded-md border bg-popover p-2 text-sm shadow-md">
+                    <p className="font-medium">{row.columnTitle}</p>
+                    <p className="text-muted-foreground">
+                      {formatCurrency(row.totalRevenue)} ({pct}%)
+                    </p>
+                  </div>
+                );
+              }}
+            />
+            <Legend
+              onClick={handleLegendClick}
+              formatter={(value: string) => (
+                <span
+                  style={{
+                    textDecoration: hiddenKeys.has(value) ? 'line-through' : 'none',
+                    opacity: hiddenKeys.has(value) ? 0.5 : 1,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {value}
+                </span>
+              )}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      )}
     </div>
   );
 };

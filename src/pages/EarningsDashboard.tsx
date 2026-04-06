@@ -23,9 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+import { formatCurrency } from '@/lib/utils';
 
 const EarningsDashboardContent: React.FC = () => {
   const { t } = useLanguage();
