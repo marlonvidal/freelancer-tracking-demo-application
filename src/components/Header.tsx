@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ onAddTask }) => {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <Clock className="h-4 w-4 text-primary-foreground" />
           </div>
-          <h1 className="font-bold text-lg hidden sm:block">FreelanceFlow</h1>
+          <span className="font-bold text-lg hidden sm:block">FreelanceFlow</span>
         </div>
 
         <nav className="flex items-center gap-1" aria-label="Main">
@@ -98,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({ onAddTask }) => {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Globe">
+            <Button variant="ghost" size="icon" aria-label={t.languageToggleLabel}>
               <Globe className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

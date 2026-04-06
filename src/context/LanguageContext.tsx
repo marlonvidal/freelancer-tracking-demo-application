@@ -113,6 +113,10 @@ export interface Translations {
   earningsEmptyNoPeriodData: string;
   earningsNoBillableWork: string;
   earningsCalculationError: string;
+
+  // Accessibility
+  languageToggleLabel: string;
+  earningsChartSrDataSummary: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -208,6 +212,8 @@ export const translations: Record<Language, Translations> = {
     earningsEmptyNoPeriodData: 'No data for this period. Try adjusting the date range.',
     earningsNoBillableWork: 'No billable work in this period.',
     earningsCalculationError: 'Unable to calculate metrics. Try refreshing the page.',
+    languageToggleLabel: 'Language',
+    earningsChartSrDataSummary: 'Data summary',
   },
   pt: {
     totalRevenue: 'Receita Total',
@@ -301,6 +307,8 @@ export const translations: Record<Language, Translations> = {
     earningsEmptyNoPeriodData: 'Sem dados para este período. Tente ajustar o intervalo de datas.',
     earningsNoBillableWork: 'Nenhum trabalho faturável neste período.',
     earningsCalculationError: 'Não foi possível calcular as métricas. Tente atualizar a página.',
+    languageToggleLabel: 'Idioma',
+    earningsChartSrDataSummary: 'Resumo dos dados',
   },
 };
 

@@ -116,6 +116,7 @@ const EarningsDashboardContent: React.FC = () => {
         {metricsError ? (
           <div
             data-testid="earnings-calculation-error"
+            role="alert"
             className="flex items-center justify-center rounded-lg border border-dashed p-8"
           >
             <p className="text-muted-foreground text-sm text-center">
@@ -125,6 +126,7 @@ const EarningsDashboardContent: React.FC = () => {
         ) : appState.tasks.length === 0 ? (
           <div
             data-testid="earnings-empty-no-tasks"
+            role="status"
             className="flex items-center justify-center rounded-lg border border-dashed p-8"
           >
             <p className="text-muted-foreground text-sm text-center">
@@ -134,6 +136,7 @@ const EarningsDashboardContent: React.FC = () => {
         ) : metrics && metrics.totalTaskCount === 0 && state.billableFilter === 'billable' ? (
           <div
             data-testid="earnings-empty-no-billable-work"
+            role="status"
             className="flex items-center justify-center rounded-lg border border-dashed p-8"
           >
             <p className="text-muted-foreground text-sm text-center">
@@ -143,6 +146,7 @@ const EarningsDashboardContent: React.FC = () => {
         ) : metrics && metrics.totalTaskCount === 0 ? (
           <div
             data-testid="earnings-empty-no-period-data"
+            role="status"
             className="flex items-center justify-center rounded-lg border border-dashed p-8"
           >
             <p className="text-muted-foreground text-sm text-center">
@@ -153,6 +157,8 @@ const EarningsDashboardContent: React.FC = () => {
           <div
             data-testid="earnings-metrics"
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
+            aria-live="polite"
+            aria-label={t.earningsDashboardHeading}
           >
             <Card>
               <CardHeader className="pb-2">

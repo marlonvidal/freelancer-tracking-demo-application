@@ -61,7 +61,23 @@ const CustomerRevenueChart: React.FC<CustomerRevenueChartProps> = ({ data }) => 
 
   return (
     <div data-testid="customer-revenue-chart" className="space-y-2">
-      <h2 className="text-lg font-semibold">{t.earningsCustomerChartTitle}</h2>
+      <h2 className="text-lg font-semibold" id="customer-chart-heading">
+        {t.earningsCustomerChartTitle}
+      </h2>
+      <ul
+        className="sr-only"
+        aria-labelledby="customer-chart-heading"
+        aria-label={`${t.earningsCustomerChartTitle} — ${t.earningsChartSrDataSummary}`}
+      >
+        {data.map((row) => {
+          const pct = total > 0 ? ((row.totalRevenue / total) * 100).toFixed(1) : '0.0';
+          return (
+            <li key={row.customerId ?? 'unassigned'}>
+              {row.customerName}: {formatCurrency(row.totalRevenue, language)} ({pct}%)
+            </li>
+          );
+        })}
+      </ul>
       {visibleData.length === 0 ? (
         <div
           data-testid="chart-all-hidden-message"
@@ -70,55 +86,57 @@ const CustomerRevenueChart: React.FC<CustomerRevenueChartProps> = ({ data }) => 
           <p className="text-muted-foreground text-sm">{t.earningsChartAllHidden}</p>
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={320}>
-          <PieChart>
-            <Pie
-              data={visibleData}
-              dataKey="totalRevenue"
-              nameKey="customerName"
-              cx="50%"
-              cy="50%"
-              outerRadius="70%"
-              isAnimationActive={false}
-            >
-              {visibleData.map((entry) => (
-                <Cell
-                  key={`cell-${entry.customerId ?? 'unassigned'}`}
-                  fill={colorMap.get(entry.customerName) ?? '#6366f1'}
-                />
-              ))}
-            </Pie>
-            <Tooltip
-              content={({ active, payload }) => {
-                if (!active || !payload?.length) return null;
-                const row = payload[0].payload as RevenueByCustomerRow;
-                const pct = total > 0 ? ((row.totalRevenue / total) * 100).toFixed(1) : '0.0';
-                return (
-                  <div className="rounded-md border bg-popover p-2 text-sm shadow-md">
-                    <p className="font-medium">{row.customerName}</p>
-                    <p className="text-muted-foreground">
-                      {formatCurrency(row.totalRevenue, language)} ({pct}%)
-                    </p>
-                  </div>
-                );
-              }}
-            />
-            <Legend
-              onClick={handleLegendClick}
-              formatter={(value: string) => (
-                <span
-                  style={{
-                    textDecoration: hiddenKeys.has(value) ? 'line-through' : 'none',
-                    opacity: hiddenKeys.has(value) ? 0.5 : 1,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {value}
-                </span>
-              )}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        <div aria-hidden="true">
+          <ResponsiveContainer width="100%" height={320}>
+            <PieChart>
+              <Pie
+                data={visibleData}
+                dataKey="totalRevenue"
+                nameKey="customerName"
+                cx="50%"
+                cy="50%"
+                outerRadius="70%"
+                isAnimationActive={false}
+              >
+                {visibleData.map((entry) => (
+                  <Cell
+                    key={`cell-${entry.customerId ?? 'unassigned'}`}
+                    fill={colorMap.get(entry.customerName) ?? '#6366f1'}
+                  />
+                ))}
+              </Pie>
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null;
+                  const row = payload[0].payload as RevenueByCustomerRow;
+                  const pct = total > 0 ? ((row.totalRevenue / total) * 100).toFixed(1) : '0.0';
+                  return (
+                    <div className="rounded-md border bg-popover p-2 text-sm shadow-md">
+                      <p className="font-medium">{row.customerName}</p>
+                      <p className="text-muted-foreground">
+                        {formatCurrency(row.totalRevenue, language)} ({pct}%)
+                      </p>
+                    </div>
+                  );
+                }}
+              />
+              <Legend
+                onClick={handleLegendClick}
+                formatter={(value: string) => (
+                  <span
+                    style={{
+                      textDecoration: hiddenKeys.has(value) ? 'line-through' : 'none',
+                      opacity: hiddenKeys.has(value) ? 0.5 : 1,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {value}
+                  </span>
+                )}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   );

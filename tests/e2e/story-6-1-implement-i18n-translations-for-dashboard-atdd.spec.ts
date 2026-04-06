@@ -222,7 +222,8 @@ test.describe("Story 6.1 — i18n Translations for Dashboard", () => {
       ).toBeVisible();
 
       // Open language dropdown via Globe icon button in the header
-      await page.getByRole("button", { name: /globe/i }).first().click();
+      // aria-label is now locale-aware: "Language" in EN (Story 7.1 accessibility fix)
+      await page.getByRole("button", { name: /language/i }).first().click();
       // Click the Portuguese option — label is "Portuguese" in EN mode; match by role+name pattern
       await page.getByRole("menuitem", { name: /portugu/i }).click();
 
