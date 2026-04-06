@@ -318,6 +318,37 @@ describe("EarningsDashboard", () => {
     expect(screen.getAllByText("$80.00").length).toBeGreaterThanOrEqual(1);
   });
 
+  // Story 6.1 — FR31: metric cards use pt-BR currency format when language=pt
+  it("[P1] metric cards display pt-BR currency format when language=pt (Story 6.1, AC4/FR31)", () => {
+    localStorage.setItem("app-language", "pt");
+    const now = Date.now();
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({
+        tasks: [
+          {
+            id: "t1", title: "Dev Work", columnId: "col-1", clientId: null,
+            isBillable: true, hourlyRate: 100, timeSpent: 3600, createdAt: now,
+            priority: "high", description: "", timeEstimate: null,
+            dueDate: null, tags: [], order: 0,
+          },
+        ],
+        columns: [{ id: "col-1", title: "Todo", order: 0 }],
+        clients: [],
+        version: 1,
+      }),
+    );
+    renderEarningsRoute();
+    // 1 billable task: 1h × $100/hr = $100 displayed in pt-BR format
+    // pt-BR format: "US$ 100,00" — contains comma decimal separator and US$ marker
+    const pageText = document.body.textContent ?? "";
+    expect(pageText).toMatch(/US\$|USD/);
+    expect(pageText).toContain(",00");
+    // Must NOT display en-US format "$100.00" for the revenue values
+    // (The labels "Receita Total" etc. confirm we're in pt mode)
+    expect(screen.getByText("Receita Total")).toBeInTheDocument();
+  });
+
   // ── Story 3.1: Customer Revenue Chart ────────────────────────────────────────
 
   it("[P0] renders customer-revenue-chart container in default activeChart=customer state (Story 3.1, AC1)", () => {

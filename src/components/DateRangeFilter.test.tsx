@@ -160,6 +160,19 @@ describe('DateRangeFilter', () => {
       expect(text).not.toBe('Year');
       expect(text).not.toBe('All time');
     });
+
+    // Story 6.1 — FR30: locale-aware date format in trigger
+    it('[P1] trigger shows "MMM d, yyyy" format in English with custom dateRange (AC3/FR30)', () => {
+      // Use local midnight dates — matches ATDD spec pattern to avoid timezone drift
+      const startMs = new Date(2026, 0, 15).getTime(); // Jan 15 2026 local midnight
+      const endMs = new Date(2026, 1, 28, 23, 59, 59, 999).getTime(); // Feb 28 2026 23:59:59
+      seedState({ dateRangePreset: 'last30', dateRange: { startMs, endMs } });
+      renderDateRangeFilter();
+      const text = screen.getByTestId('date-range-picker-trigger').textContent ?? '';
+      // EN: "Jan 15, 2026 – Feb 28, 2026"
+      expect(text).toContain('Jan 15, 2026');
+      expect(text).toContain('Feb 28, 2026');
+    });
   });
 
   // ── Preset button interactions ──────────────────────────────────────────────
@@ -239,6 +252,19 @@ describe('DateRangeFilter', () => {
       seedState({ dateRangePreset: 'all' });
       renderDateRangeFilter();
       expect(screen.getByTestId('date-range-picker-trigger')).toHaveTextContent('Todo o período');
+    });
+
+    // Story 6.1 — FR30: PT date format in trigger
+    it('[P1] trigger shows "DD/MM/YYYY" format when language=pt and custom dateRange is set (AC3/FR30)', () => {
+      // Use local midnight dates — matches ATDD spec pattern to avoid timezone drift
+      const startMs = new Date(2026, 0, 15).getTime(); // Jan 15 2026 local midnight
+      const endMs = new Date(2026, 1, 28, 23, 59, 59, 999).getTime(); // Feb 28 2026 23:59:59
+      seedState({ dateRangePreset: 'last30', dateRange: { startMs, endMs } });
+      renderDateRangeFilter();
+      const text = screen.getByTestId('date-range-picker-trigger').textContent ?? '';
+      // PT: "15/01/2026 – 28/02/2026"
+      expect(text).toContain('15/01/2026');
+      expect(text).toContain('28/02/2026');
     });
   });
 

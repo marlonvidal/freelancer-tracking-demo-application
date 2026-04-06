@@ -89,3 +89,66 @@ describe("Story 4.4 — formatCurrency edge cases", () => {
     expect(utils.cn("foo", "bar")).toBe("foo bar");
   });
 });
+
+// Story 6.1: formatCurrency locale-aware via optional language param (AC4/FR31)
+describe("Story 6.1 — formatCurrency locale-aware (AC4/FR31)", () => {
+  it("[P0] formatCurrency with language='pt' produces pt-BR currency format", async () => {
+    const { formatCurrency } = await import("./utils");
+
+    const result = formatCurrency(1234.56, "pt");
+    // pt-BR uses period as thousands separator and comma as decimal separator
+    // e.g. "US$ 1.234,56" — verify the thousand-separator and decimal patterns
+    expect(result).toContain("1.234");
+    expect(result).toContain(",56");
+  });
+
+  it("[P0] formatCurrency with language='pt' uses a USD currency marker", async () => {
+    const { formatCurrency } = await import("./utils");
+
+    const result = formatCurrency(100, "pt");
+    // pt-BR Intl format for USD includes 'US$' or 'USD' prefix/suffix
+    expect(result).toMatch(/US\$|USD/);
+  });
+
+  it("[P1] formatCurrency with language='en' produces the same output as default en-US", async () => {
+    const { formatCurrency } = await import("./utils");
+
+    // Explicit 'en' must equal the no-param default (backward compat parity)
+    expect(formatCurrency(1234.56, "en")).toBe("$1,234.56");
+    expect(formatCurrency(0, "en")).toBe("$0.00");
+    expect(formatCurrency(100, "en")).toBe("$100.00");
+  });
+
+  it("[P1] formatCurrency with language='pt' formats zero with pt-BR decimal notation", async () => {
+    const { formatCurrency } = await import("./utils");
+
+    const result = formatCurrency(0, "pt");
+    // pt-BR zero: comma decimal, two decimal places
+    expect(result).toContain(",00");
+  });
+
+  it("[P1] formatCurrency with language='pt' formats negative amounts in pt-BR", async () => {
+    const { formatCurrency } = await import("./utils");
+
+    const result = formatCurrency(-100, "pt");
+    // Should contain a negative sign indicator
+    expect(result).toMatch(/-/);
+  });
+
+  it("[P2] formatCurrency without language param defaults to en-US (backward compatibility guarantee)", async () => {
+    const { formatCurrency } = await import("./utils");
+
+    // All existing call sites call formatCurrency(value) — must remain unaffected
+    expect(formatCurrency(1234.56)).toBe("$1,234.56");
+    expect(formatCurrency(1000000)).toBe("$1,000,000.00");
+    expect(formatCurrency(0.5)).toBe("$0.50");
+  });
+
+  it("[P2] formatCurrency pt locale: large amounts use period as thousands separator", async () => {
+    const { formatCurrency } = await import("./utils");
+
+    const result = formatCurrency(1000000, "pt");
+    // pt-BR: 1.000.000,00 pattern
+    expect(result).toContain("1.000.000");
+  });
+});

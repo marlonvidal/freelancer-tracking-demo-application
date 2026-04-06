@@ -26,7 +26,7 @@ import {
 import { formatCurrency } from '@/lib/utils';
 
 const EarningsDashboardContent: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { state: appState } = useApp();
   const {
     state,
@@ -161,7 +161,7 @@ const EarningsDashboardContent: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-semibold">{formatCurrency(metrics.totalRevenue)}</p>
+                <p className="text-2xl font-semibold">{formatCurrency(metrics.totalRevenue, language)}</p>
               </CardContent>
             </Card>
             <Card>
@@ -171,7 +171,7 @@ const EarningsDashboardContent: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-semibold">{formatCurrency(metrics.billableRevenue)}</p>
+                <p className="text-2xl font-semibold">{formatCurrency(metrics.billableRevenue, language)}</p>
               </CardContent>
             </Card>
             <Card>
@@ -181,7 +181,7 @@ const EarningsDashboardContent: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-semibold">{formatCurrency(metrics.nonBillableRevenue)}</p>
+                <p className="text-2xl font-semibold">{formatCurrency(metrics.nonBillableRevenue, language)}</p>
               </CardContent>
             </Card>
             <Card>
@@ -191,7 +191,7 @@ const EarningsDashboardContent: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-semibold">{formatCurrency(metrics.averageHourlyRate)}</p>
+                <p className="text-2xl font-semibold">{formatCurrency(metrics.averageHourlyRate, language)}</p>
               </CardContent>
             </Card>
             <Card>

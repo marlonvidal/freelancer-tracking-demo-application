@@ -52,3 +52,7 @@
 ## Deferred from: code review of 4-2-implement-billable-non-billable-toggle.md (2026-04-06)
 
 - **`toHaveClass(/bg-primary/)` fragile against CSS class rename** — In `tests/e2e/story-4-2-implement-billable-non-billable-toggle-atdd.spec.ts` (visual distinction P1 test), the active button assertion relies on shadcn's internal `bg-primary` class. If the design system renames this class, the test breaks silently. Explicitly documented in spec and consistent with Story 4.1 pattern. Address in a future visual regression / design-system hardening story.
+
+## Deferred from: code review of 6-1-implement-i18n-translations-for-dashboard.md (2026-04-06)
+
+- **`aria-label="Globe"` not locale-aware on language toggle button** — `Header.tsx` line 101: the Globe icon button has a hardcoded English `aria-label="Globe"` added for E2E test targeting. This is technically an i18n gap (screen reader users in PT mode hear "Globe" in English). Since it's an icon-only button describing the icon rather than user-visible content, and the spec explicitly required this label for E2E testability, this is acceptable short-term. Address in Epic 7 (Accessibility/WCAG story) by adding a translation key like `t.languageToggleLabel` and passing it to `aria-label`.

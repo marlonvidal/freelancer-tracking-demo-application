@@ -21,10 +21,15 @@ function presetLabel(preset: DateRangePreset, t: Translations): string {
   }
 }
 
-function formatDisplayRange(state: EarningsDashboardPersistedState, t: Translations): string {
+function formatDisplayRange(
+  state: EarningsDashboardPersistedState,
+  t: Translations,
+  language: 'en' | 'pt',
+): string {
   if (state.dateRange) {
-    const from = format(new Date(state.dateRange.startMs), 'MMM d, yyyy');
-    const to = format(new Date(state.dateRange.endMs), 'MMM d, yyyy');
+    const dateFormat = language === 'pt' ? 'dd/MM/yyyy' : 'MMM d, yyyy';
+    const from = format(new Date(state.dateRange.startMs), dateFormat);
+    const to = format(new Date(state.dateRange.endMs), dateFormat);
     return `${from} – ${to}`;
   }
   switch (state.dateRangePreset) {
@@ -37,7 +42,7 @@ function formatDisplayRange(state: EarningsDashboardPersistedState, t: Translati
 }
 
 const DateRangeFilter: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { state, setDateRangePreset, setCustomDateRange } = useEarningsDashboardState();
   const [calendarRange, setCalendarRange] = useState<DateRange | undefined>(
     state.dateRange
@@ -93,7 +98,7 @@ const DateRangeFilter: React.FC = () => {
             data-testid="date-range-picker-trigger"
             aria-label={t.earningsPickDateRange}
           >
-            {formatDisplayRange(state, t)}
+            {formatDisplayRange(state, t, language)}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

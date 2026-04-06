@@ -22,7 +22,7 @@ const CHART_COLORS = [
 ];
 
 const TagRevenueChart: React.FC<TagRevenueChartProps> = ({ data }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [hiddenKeys, setHiddenKeys] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -97,7 +97,7 @@ const TagRevenueChart: React.FC<TagRevenueChartProps> = ({ data }) => {
                   <div className="rounded-md border bg-popover p-2 text-sm shadow-md">
                     <p className="font-medium">{row.tag}</p>
                     <p className="text-muted-foreground">
-                      {formatCurrency(row.totalRevenue)} ({pct}%)
+                      {formatCurrency(row.totalRevenue, language)} ({pct}%)
                     </p>
                   </div>
                 );
