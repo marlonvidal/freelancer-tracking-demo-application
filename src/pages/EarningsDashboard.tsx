@@ -6,9 +6,10 @@ import {
   useEarningsDashboardState,
 } from '@/context/EarningsDashboardStateContext';
 import type { ActiveChartView, BillableFilter, DateRangePreset } from '@/lib/earnings-dashboard-storage';
-import { calculateRevenueByCustomer, calculateRevenueByProject, calculateSummaryMetrics, resolveDateRangeMs } from '@/lib/earnings-calculations';
+import { calculateRevenueByCustomer, calculateRevenueByProject, calculateRevenueByTag, calculateSummaryMetrics, resolveDateRangeMs } from '@/lib/earnings-calculations';
 import CustomerRevenueChart from '@/components/CustomerRevenueChart';
 import ProjectRevenueChart from '@/components/ProjectRevenueChart';
+import TagRevenueChart from '@/components/TagRevenueChart';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,6 +73,17 @@ const EarningsDashboardContent: React.FC = () => {
         appState.clients,
       ),
     [appState.tasks, appState.columns, appState.clients, state],
+  );
+
+  const tagData = useMemo(
+    () =>
+      calculateRevenueByTag(
+        appState.tasks,
+        resolveDateRangeMs(state, Date.now()),
+        state.billableFilter,
+        appState.clients,
+      ),
+    [appState.tasks, appState.clients, state],
   );
 
   useEffect(() => {
@@ -165,6 +177,9 @@ const EarningsDashboardContent: React.FC = () => {
         )}
         {state.activeChart === 'project' && (
           <ProjectRevenueChart data={projectData} />
+        )}
+        {state.activeChart === 'tag' && (
+          <TagRevenueChart data={tagData} />
         )}
 
         <div className="flex flex-col gap-6 max-w-xl">

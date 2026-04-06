@@ -30,3 +30,11 @@
 - **`getTaskBillableRevenue` called for non-billable tasks in metrics loop** — In `calculateSummaryMetrics`, `getTaskBillableRevenue` is called for every filtered task but the result is used only if `task.isBillable`. For non-billable tasks the call returns 0 and is discarded. Harmless micro-inefficiency consistent with the spec skeleton; revisit if profiling shows cost.
 
 - **Negative `timeSpent` produces negative `averageHourlyRate`** — No guard exists for corrupt negative `timeSpent` values; this would yield a negative average hourly rate. Pre-existing data integrity concern out of story scope; a future data-validation story or input sanitization should address this.
+
+## Deferred from: code review of 3-3-implement-tag-revenue-chart.md (2026-04-06)
+
+- **`hiddenKeys` not reset when `data` prop changes** — In `TagRevenueChart.tsx`, legend-click state (`hiddenKeys`) is not cleared when the `data` prop changes (e.g., after a date filter or billable filter update). A previously hidden tag that disappears and reappears will remain hidden. Pre-existing pattern identical to `CustomerRevenueChart` and `ProjectRevenueChart`; address holistically in a chart UX polish story.
+
+- **E2E performance timer includes navigation latency** — In `story-3-3-tag-revenue-chart-atdd.spec.ts`, `const start = Date.now()` is placed before `page.goto()`, so page navigation time counts against the 2-second chart render budget. In slow CI environments this can produce false negatives. Pre-existing pattern in stories 3.1 and 3.2 E2E specs; consider moving timer after navigation completes in a future E2E quality pass.
+
+- **All-items-hidden edge case renders empty chart without informative message** — In `TagRevenueChart.tsx`, if the user clicks all legend items to hide all slices, `visibleData` becomes empty and recharts renders an empty PieChart silently. The early `data.length === 0` no-data guard is bypassed. No AC covers this; pre-existing behavior in sibling components. Revisit in an Epic 5/6 chart polish story.
