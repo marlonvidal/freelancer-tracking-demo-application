@@ -48,3 +48,7 @@
 ## Deferred from: code review of 4-1-implement-date-range-filter-and-presets.md (2026-04-06)
 
 - **Calendar popover has no auto-close after range selection** — In `DateRangeFilter.tsx`, after the user selects both `from` and `to` dates, the `<Popover>` stays open. The user must click outside to dismiss it. No AC requires auto-close; this is a UX improvement opportunity. Address in Story 4.4 (chart UX polish) or a dedicated filter UX pass.
+
+## Deferred from: code review of 4-2-implement-billable-non-billable-toggle.md (2026-04-06)
+
+- **`toHaveClass(/bg-primary/)` fragile against CSS class rename** — In `tests/e2e/story-4-2-implement-billable-non-billable-toggle-atdd.spec.ts` (visual distinction P1 test), the active button assertion relies on shadcn's internal `bg-primary` class. If the design system renames this class, the test breaks silently. Explicitly documented in spec and consistent with Story 4.1 pattern. Address in a future visual regression / design-system hardening story.

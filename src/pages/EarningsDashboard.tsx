@@ -5,11 +5,12 @@ import {
   EarningsDashboardStateProvider,
   useEarningsDashboardState,
 } from '@/context/EarningsDashboardStateContext';
-import type { ActiveChartView, BillableFilter } from '@/lib/earnings-dashboard-storage';
+import type { ActiveChartView } from '@/lib/earnings-dashboard-storage';
 import { calculateRevenueByCustomer, calculateRevenueByProject, calculateRevenueByTag, calculateSummaryMetrics, resolveDateRangeMs } from '@/lib/earnings-calculations';
 import CustomerRevenueChart from '@/components/CustomerRevenueChart';
 import ProjectRevenueChart from '@/components/ProjectRevenueChart';
 import TagRevenueChart from '@/components/TagRevenueChart';
+import BillableToggle from '@/components/BillableToggle';
 import DateRangeFilter from '@/components/DateRangeFilter';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,6 @@ const EarningsDashboardContent: React.FC = () => {
   const { state: appState } = useApp();
   const {
     state,
-    setBillableFilter,
     setActiveChartView,
     clearAppData,
   } = useEarningsDashboardState();
@@ -181,22 +181,7 @@ const EarningsDashboardContent: React.FC = () => {
         <div className="flex flex-col gap-6 max-w-xl">
           <DateRangeFilter />
 
-          <div className="space-y-2">
-            <Label htmlFor="earnings-billable-filter">{t.earningsBillableFilterLabel}</Label>
-            <Select
-              value={state.billableFilter}
-              onValueChange={(v) => setBillableFilter(v as BillableFilter)}
-            >
-              <SelectTrigger id="earnings-billable-filter" className="max-w-md">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t.earningsFilterAll}</SelectItem>
-                <SelectItem value="billable">{t.billable}</SelectItem>
-                <SelectItem value="nonBillable">{t.nonBillable}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <BillableToggle />
 
           <div className="space-y-2">
             <Label htmlFor="earnings-chart-view">{t.earningsChartViewLabel}</Label>

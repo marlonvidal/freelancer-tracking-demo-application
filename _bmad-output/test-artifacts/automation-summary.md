@@ -6,197 +6,199 @@ stepsCompleted:
   - step-03c-aggregate
   - step-04-validate-and-summarize
 lastStep: step-04-validate-and-summarize
-lastSaved: '2026-04-06'
-story: 4-1-implement-date-range-filter-and-presets
+lastSaved: 2026-04-06
+story: 4-2-implement-billable-non-billable-toggle
 inputDocuments:
-  - _bmad-output/implementation-artifacts/4-1-implement-date-range-filter-and-presets.md
-  - src/components/DateRangeFilter.tsx
-  - src/context/EarningsDashboardStateContext.tsx
-  - src/context/EarningsDashboardStateContext.test.tsx
-  - src/lib/earnings-dashboard-storage.ts
-  - tests/e2e/story-4-1-implement-date-range-filter-and-presets-atdd.spec.ts
-  - tests/api/story-4-1-earnings-context-atdd.spec.ts
-  - src/pages/EarningsDashboard.test.tsx
+  - _bmad-output/implementation-artifacts/4-2-implement-billable-non-billable-toggle.md
+  - _bmad/tea/config.yaml
   - playwright.config.ts
   - vitest.config.ts
+  - src/components/BillableToggle.tsx
+  - src/components/DateRangeFilter.test.tsx
+  - src/lib/earnings-dashboard-storage.ts
+  - tests/e2e/story-4-2-implement-billable-non-billable-toggle-atdd.spec.ts
+  - tests/api/story-4-2-billable-toggle-storage-atdd.spec.ts
+  - src/pages/EarningsDashboard.test.tsx
 ---
 
-# Test Automation Expansion — Story 4.1: Implement Date Range Filter and Presets
-
-**Date**: 2026-04-06  
-**Story**: `4-1-implement-date-range-filter-and-presets`  
-**Stack**: Frontend (React/TypeScript, Vitest + Playwright)  
-**Execution Mode**: Sequential  
-**Workflow Mode**: BMad-Integrated
-
----
+# Test Automation Summary — Story 4.2: Implement Billable/Non-Billable Toggle
 
 ## Step 1: Preflight & Context
 
 ### Stack Detection
 
-- **Detected Stack**: `frontend`
-- **Framework verified**: `playwright.config.ts` + `vitest.config.ts` present
-- **Test dir (Vitest)**: `src/**/*.{test,spec}.{ts,tsx}`
-- **Test dir (Playwright)**: `tests/`
-- **Config flags**: No `bmad.config.yaml` found; using sensible defaults
+| Property | Value |
+|---|---|
+| `detected_stack` | `frontend` |
+| Test framework | Vitest (unit) + Playwright (E2E) |
+| `tea_use_playwright_utils` | `true` |
+| `tea_use_pactjs_utils` | `false` |
+| `tea_execution_mode` | `sequential` (resolved from `auto`) |
 
-### Context Loaded
+### Framework Verification
 
-- Story file with all acceptance criteria and dev notes loaded
-- Existing test structure analysed across 12 Vitest test files and 16 Playwright spec files
-- **Vitest baseline (before this run)**: 162 tests across 12 files
-- **Playwright baseline (before this run)**: 110 passing tests (103 baseline + 8 ATDD from dev stage; 2 pre-existing timing flakes excluded)
+- `playwright.config.ts` ✅ — Projects: `chromium` (E2E), `atdd-api` (API/storage)
+- `vitest.config.ts` ✅ — jsdom environment, includes `src/**/*.{test,spec}.{ts,tsx}`
+- `tests/support/fixtures/` ✅ — Base fixtures and task factory in place
+
+### Execution Mode
+
+**Mode:** `sequential` (auto-resolved — capability probe returned no subagent/agent-team support in this context)
+
+### Baseline (pre-automation)
+
+| Suite | Files | Tests | Status |
+|---|---|---|---|
+| Vitest (unit/component) | 13 | 188 | All passing |
+| Playwright E2E (story 4.2 ATDD) | 1 | 7 | All passing |
+| Playwright API (story 4.2 storage) | 1 | 2 | All passing |
 
 ---
 
 ## Step 2: Identify Automation Targets
 
-### AC → Coverage Mapping
+### Coverage Gap Analysis
 
-| AC | Requirement | Existing Coverage | Gap? |
-|----|-------------|-------------------|------|
-| AC1 | Calendar popover opens (FR11) | ✅ E2E ATDD | None |
-| AC2 | "Last 30 days" preset highlights (FR12) | ✅ E2E ATDD | None |
-| AC3 | Four preset buttons visible (FR12) | ✅ E2E ATDD | None |
-| AC4 | All charts apply filter (FR13) | ✅ E2E + API ATDD | None |
-| AC5 | Date range persists (FR14, FR40) | ✅ E2E + API + Vitest unit | None |
-| AC6 | 500ms response (NFR-P2) | ✅ E2E ATDD | None |
-| `setCustomDateRange` persists | — | ✅ Vitest unit | None |
-| `setCustomDateRange(undefined)` | — | ✅ Vitest unit | None |
-| `DateRangeFilter` component render | — | ❌ | **Gap** |
-| Preset active state (variant classes) | — | ❌ | **Gap** |
-| `formatDisplayRange()` all paths | — | ❌ | **Gap** |
-| Preset click → localStorage update | — | ❌ | **Gap** |
-| Custom range cleared on preset click | — | ❌ | **Gap** |
-| Portuguese i18n (component level) | — | ❌ | **Gap** |
-| Single-day range display edge case | — | ❌ | **Gap** |
-| Large-timestamp edge case | — | ❌ | **Gap** |
+Story 4.2 created `src/components/BillableToggle.tsx` but did **not** create a companion component-level test file. This is the only uncovered gap — all other story outputs (storage layer, E2E user flows, dashboard integration) had existing coverage.
+
+**Pattern reference:** `src/components/DateRangeFilter.test.tsx` (26 tests, Story 4.1) — identical component shape, identical context dependency pattern.
+
+### Coverage Already Present (not duplicated)
+
+| File | Coverage |
+|---|---|
+| `tests/e2e/story-4-2-implement-billable-non-billable-toggle-atdd.spec.ts` | AC1–AC5, NFR-P2 (7 E2E tests) |
+| `tests/api/story-4-2-billable-toggle-storage-atdd.spec.ts` | Storage contract, coercePersisted defaults (2 API tests) |
+| `src/pages/EarningsDashboard.test.tsx` | BillableToggle rendered in dashboard context (regression guard) |
+| `src/lib/earnings-dashboard-storage.test.ts` | billableFilter enum validation, round-trip, corruption handling |
+| `src/context/EarningsDashboardStateContext.test.tsx` | setBillableFilter context action |
 
 ### Coverage Plan
 
-| Test Level | Target | Priority | Justification |
-|------------|--------|----------|---------------|
-| Component (Vitest) | `DateRangeFilter.tsx` — all rendering paths | P0 | No component test existed at all |
-| Component (Vitest) | Active preset variant via CSS class inspection | P1 | `isPresetActive()` logic not covered |
-| Component (Vitest) | `formatDisplayRange()` — all four preset paths + custom | P1 | Pure logic branches untested |
-| Component (Vitest) | Preset button click → localStorage persistence | P1 | Interaction layer gap |
-| Component (Vitest) | Clicking preset clears custom `dateRange` | P1 | Critical state transition untested at component level |
-| Component (Vitest) | Portuguese i18n (label + trigger text) | P2 | i18n contract unverified at component level |
-| Component (Vitest) | Single-day and large-timestamp edge cases | P2 | `formatDisplayRange` boundary conditions |
+| Target | Test Level | Tests | Priority |
+|---|---|---|---|
+| `BillableToggle` — wrapper + buttons render | Component (Vitest) | 2 | P0 |
+| `BillableToggle` — label render (EN) | Component (Vitest) | 3 | P0 |
+| `BillableToggle` — button labels EN | Component (Vitest) | 3 | P0 |
+| `BillableToggle` — button labels PT (i18n) | Component (Vitest) | 3 | P1 |
+| `BillableToggle` — active variant class | Component (Vitest) | 3 | P1 |
+| `BillableToggle` — click → localStorage | Component (Vitest) | 4 | P1 |
+| `BillableToggle` — edge cases (idempotent, default) | Component (Vitest) | 3 | P2 |
+
+**Total new tests planned:** 19
 
 ---
 
-## Step 3: Test Generation
+## Step 3: Test Generation (Sequential)
 
-### Execution Mode Resolution
+### Worker A — API Test Generation
 
-```
-⚙️ Execution Mode Resolution:
-- Requested: auto
-- Probe Enabled: true
-- Supports agent-team: false
-- Supports subagent: false
-- Resolved: sequential
-```
+API layer coverage for story 4.2 was **fully covered** by the existing ATDD spec (`tests/api/story-4-2-billable-toggle-storage-atdd.spec.ts`). No new API tests generated to avoid duplication.
 
-### Generated Tests
+### Worker B — E2E Test Generation
 
-**Worker A (API tests)**: No new API test files required — `tests/api/story-4-1-earnings-context-atdd.spec.ts` already provides complete P0 storage contract coverage.
+E2E coverage for story 4.2 was **fully covered** by the existing ATDD spec. No new E2E tests generated to avoid duplication. Existing 7 tests verified passing.
 
-**Worker B (E2E tests)**: No new E2E files required — all 6 ACs are covered by the existing ATDD spec (`story-4-1-implement-date-range-filter-and-presets-atdd.spec.ts`) and the updated `earnings-dashboard-persistence.spec.ts`.
+### Worker B (Component) — Unit Test Generation
 
-**Unit/Component tests (new)**: `src/components/DateRangeFilter.test.tsx` — 26 tests generated covering all identified gaps.
+**Generated:** `src/components/BillableToggle.test.tsx`
+
+19 tests across 5 describe groups:
+
+| Group | Tests | Priority |
+|---|---|---|
+| `rendering` | 3 | P0 |
+| `button labels — English` | 3 | P0 |
+| `button labels — Portuguese` | 3 | P1 |
+| `active state highlighting` | 3 | P1 |
+| `click interactions` | 4 | P1 |
+| `edge cases` | 3 | P2 |
 
 ---
 
 ## Step 3C: Aggregation
 
-### Files Created
+### Files Written
 
-| File | Action | Tests |
-|------|--------|-------|
-| `src/components/DateRangeFilter.test.tsx` | **Created** | 26 new component-level tests |
+| Action | Path |
+|---|---|
+| **Created** | `src/components/BillableToggle.test.tsx` |
 
-### Files Verified (Unchanged, Still Passing)
+### Fixture Needs
 
-| File | Tests | Status |
-|------|-------|--------|
-| `src/context/EarningsDashboardStateContext.test.tsx` | 7 (2 for Story 4.1) | ✅ Pass |
-| `tests/e2e/story-4-1-implement-date-range-filter-and-presets-atdd.spec.ts` | 6 | ✅ Pass |
-| `tests/api/story-4-1-earnings-context-atdd.spec.ts` | 2 | ✅ Pass |
-| `tests/e2e/earnings-dashboard-persistence.spec.ts` | (part of suite) | ✅ Pass |
-| `src/pages/EarningsDashboard.test.tsx` | 23 | ✅ Pass |
+No new fixtures required. Existing providers (`LanguageProvider`, `EarningsDashboardStateProvider`) used — identical to `DateRangeFilter.test.tsx` pattern.
+
+### Summary Statistics
+
+| Metric | Value |
+|---|---|
+| Stack type | `frontend` |
+| Tests generated (new) | 19 |
+| Test files created | 1 |
+| Test files modified | 0 |
+| Fixtures created | 0 |
+| Priority P0 | 6 |
+| Priority P1 | 10 |
+| Priority P2 | 3 |
+| Execution mode | SEQUENTIAL |
 
 ---
 
-## Step 4: Validate & Summarize
+## Step 4: Validation & Final Results
 
-### Coverage Improvements
+### Validation Checklist
 
-Areas now covered that were not previously tested:
-
-1. **`DateRangeFilter` component rendering** (P0)
-   - `data-testid="date-range-presets"` container present
-   - All four preset buttons rendered with correct English labels
-   - Popover trigger button rendered with `data-testid="date-range-picker-trigger"`
-   - "Date range" label rendered
-
-2. **Active preset variant highlighting** (P1)
-   - `preset-last30` has CVA `default` variant (contains `bg-primary`) when active
-   - `preset-quarter`, `preset-year`, `preset-all` each highlighted when active
-   - When `state.dateRange` is set, NO preset button has `bg-primary` (`isPresetActive` returns false for all)
-
-3. **`formatDisplayRange()` all code paths** (P1)
-   - Returns "Last 30 days" / "Quarter" / "Year" / "All time" for each preset (via trigger `toHaveTextContent`)
-   - Returns formatted `"MMM d, yyyy – MMM d, yyyy"` string when `state.dateRange` is set
-
-4. **Preset button interactions** (P1)
-   - Clicking `preset-quarter`, `preset-year`, `preset-all` each persist correct `dateRangePreset` to localStorage
-   - Clicking any preset clears existing `state.dateRange` from localStorage
-   - Idempotent re-click on active preset works correctly
-
-5. **Portuguese i18n at component level** (P2)
-   - All four preset buttons display Portuguese labels
-   - "Intervalo de datas" label renders
-   - Trigger shows Portuguese preset label when language is `pt`
-
-6. **Edge cases** (P2)
-   - Single-day range (`startMs === endMs`) renders without crash; shows custom format
-   - Persisted `dateRange` initialises `calendarRange` on mount — trigger shows custom range
-   - Very large timestamps (year 2100) do not crash the component
+- [x] Framework readiness verified (Vitest + Playwright both configured)
+- [x] Coverage mapped to story ACs and implementation files
+- [x] No duplication with existing ATDD, storage, or dashboard tests
+- [x] Test quality: describe groups, beforeEach cleanup, exact label matching with testId scoping
+- [x] Fixtures reuse existing providers (no orphaned mocks)
+- [x] No CLI browser sessions opened (component tests only)
+- [x] Temp artifacts stored in `_bmad-output/test-artifacts/` (this file)
+- [x] All new tests pass: 19/19
+- [x] No regressions: full suite 207/207
 
 ### Final Test Suite Results
 
-| Suite | Tests Before | Tests After | Delta | Status |
-|-------|-------------|-------------|-------|--------|
-| Vitest unit/component | 162 | **188** | +26 | ✅ All pass |
-| Playwright E2E + API | 111 passing* | **111 passing*** | 0 | ✅ All pass |
+| Suite | Before | After | Delta |
+|---|---|---|---|
+| Vitest unit/component files | 13 | **14** | +1 |
+| Vitest tests | 188 | **207** | **+19** |
+| Playwright E2E (story 4.2 ATDD) | 7 | 7 | ±0 |
+| Playwright API (story 4.2 storage) | 2 | 2 | ±0 |
+| **Total tests (Vitest + verified Playwright)** | 197 | **216** | **+19** |
 
-*2 pre-existing timing flakes (`earnings-dashboard-route.spec.ts` NFR-P5, `story-3-2` NFR-P1) fail intermittently under parallel load — documented since Story 3.2, not caused by Story 4.1 work.
+**All tests pass. No regressions.**
 
-### Test Count by Priority
+### Coverage Improvements
 
-| Priority | New Tests | Description |
-|----------|-----------|-------------|
-| P0 | 3 | Rendering: presets container, preset buttons, popover trigger |
-| P1 | 14 | Active variant state, formatDisplayRange paths, interactions, PT i18n trigger |
-| P2 | 9 | i18n labels, edge cases |
-| **Total** | **26** | |
+Areas now covered that were not before:
 
-### Assumptions & Notes
+| Area | Coverage Added |
+|---|---|
+| `BillableToggle` component rendering | Wrapper `data-testid`, three button `data-testid` attributes, label text |
+| `BillableToggle` English i18n | "All", "Billable", "Non-billable" button labels via component test |
+| `BillableToggle` Portuguese i18n | "Filtro faturável", "Faturável", "Não faturável" — bilingual stability |
+| `BillableToggle` active state | CSS variant class (`bg-primary`) per active filter value (all/billable/nonBillable) |
+| `BillableToggle` click → persistence | Each filter button click persists correct `billableFilter` to localStorage |
+| `BillableToggle` state isolation | Clicking a button does not alter `dateRangePreset` or other state fields |
+| `BillableToggle` edge cases | Idempotent re-click, default state rendering (no seed) |
+| `filterLabel` utility | Implicitly tested through all button text assertions |
 
-- `@testing-library/user-event` is not installed; `fireEvent` from `@testing-library/react` used for click interactions
-- Active button variant detected via CVA-generated CSS class `bg-primary` (present only in `variant="default"`, not in `variant="outline"`)
-- The "Pick a date range" default-case path in `formatDisplayRange()` is unreachable through the storage provider (invalid presets are rejected by `coercePersisted`) — not tested
-- Date formatting in `formatDisplayRange()` is timezone-sensitive; tests use `Date.UTC()` and check for year/non-preset-label presence rather than exact date strings
+### Key Assumptions
+
+1. `BillableToggle.test.tsx` follows the `DateRangeFilter.test.tsx` render helper pattern — full providers (`LanguageProvider` + `EarningsDashboardStateProvider`) to avoid mock drift.
+2. Class inspection (`bg-primary`) is consistent with the shadcn CVA `default` variant — same approach accepted in both Story 4.1 `DateRangeFilter.test.tsx` and the Story 4.2 E2E ATDD spec.
+3. No new E2E or API tests added — ATDD specs from the story implementation already provide comprehensive user-flow and storage-contract coverage. Adding more would duplicate.
 
 ### Risks
 
-- None: all new tests are additive; no existing tests were modified; both pre-existing timing flakes are documented and pre-date this story
+| Risk | Mitigation |
+|---|---|
+| `toHaveClass(/bg-primary/)` fragile against CSS rename | Documented; follows Story 4.1 precedent; deferred to visual regression tooling |
+| Portuguese translation values may drift | Tests use hardcoded PT strings — update if `LanguageContext.tsx` PT translations change |
 
-### Recommended Next Workflows
+### Next Recommended Workflow
 
-- **`test-review`**: Review the new `DateRangeFilter.test.tsx` for test quality and naming consistency
-- **`trace`**: Generate traceability matrix to confirm FR11–FR14, FR40, NFR-P2 are fully covered across all test levels
-- **Story 4.2**: `bmad-dev-story` for the billable toggle filter (next story in Epic 4)
+- **`bmad-testarch-test-review`** — validate test quality against TEA best-practice checklist
+- **`bmad-testarch-trace`** — generate traceability matrix mapping tests to story ACs (FR15–FR20, FR41, NFR-P2)

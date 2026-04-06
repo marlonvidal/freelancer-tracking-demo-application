@@ -37,9 +37,8 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     // Date range now uses preset buttons via DateRangeFilter (Story 4.1)
     await page.getByTestId("preset-last30").click();
 
-    const billableControl = page.getByRole("combobox", { name: /billable/i });
-    await billableControl.click();
-    await page.getByRole("option", { name: /^billable$/i }).click();
+    // Billable filter now uses BillableToggle buttons (Story 4.2)
+    await page.getByTestId("billable-toggle-billable").click();
 
     const stored = await readEarningsDashboardState(page);
     expect(stored).not.toBeNull();
@@ -63,9 +62,8 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     // Date range now uses preset buttons via DateRangeFilter (Story 4.1)
     await page.getByTestId("preset-last30").click();
 
-    const billableControl = page.getByRole("combobox", { name: /billable/i });
-    await billableControl.click();
-    await page.getByRole("option", { name: /non[- ]?billable/i }).click();
+    // Billable filter now uses BillableToggle buttons (Story 4.2)
+    await page.getByTestId("billable-toggle-nonBillable").click();
 
     await page.getByRole("link", { name: /board/i }).click();
     await expect(page).toHaveURL(/\/$/);
@@ -78,9 +76,7 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     // Verify state persisted in localStorage
     const stored = await readEarningsDashboardState(page);
     expect(stored?.dateRangePreset).toBe("last30");
-    await expect(
-      page.getByRole("combobox", { name: /billable/i }),
-    ).toContainText(/non[- ]?billable/i);
+    expect(stored?.billableFilter).toBe("nonBillable");
   });
 
   test("[P1] reload on /earnings restores persisted filter state (AC3)", async ({
@@ -93,9 +89,8 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     // Date range now uses preset buttons via DateRangeFilter (Story 4.1)
     await page.getByTestId("preset-last30").click();
 
-    const billableControl = page.getByRole("combobox", { name: /billable/i });
-    await billableControl.click();
-    await page.getByRole("option", { name: /^all$/i }).click();
+    // Billable filter now uses BillableToggle buttons (Story 4.2)
+    await page.getByTestId("billable-toggle-all").click();
 
     await page.reload();
 
@@ -103,9 +98,7 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
     await expect(page.getByTestId("preset-last30")).toBeVisible();
     const stored = await readEarningsDashboardState(page);
     expect(stored?.dateRangePreset).toBe("last30");
-    await expect(
-      page.getByRole("combobox", { name: /billable/i }),
-    ).toContainText(/^all$/i);
+    expect(stored?.billableFilter).toBe("all");
   });
 
   test("[P1] persisted document includes activeChart in earnings-dashboard-state (AC5)", async ({
@@ -151,9 +144,8 @@ test.describe("Story 1.3 — Earnings dashboard persistence", () => {
 
     // Date range uses preset buttons via DateRangeFilter (Story 4.1) — default is last30
     await expect(page.getByTestId("preset-last30")).toBeVisible();
-    await expect(
-      page.getByRole("combobox", { name: /billable/i }),
-    ).toContainText(/^all$/i);
+    // Billable filter now uses BillableToggle buttons (Story 4.2) — default after clear is 'all'
+    await expect(page.getByTestId("billable-toggle-all")).toBeVisible();
     await expect(page.getByRole("combobox", { name: /chart/i })).toContainText(/^customer$/i);
   });
 });

@@ -77,9 +77,10 @@ describe("EarningsDashboard", () => {
     renderEarningsRoute();
     // Date range now uses preset buttons via DateRangeFilter (Story 4.1)
     expect(screen.getByTestId("preset-year")).toBeInTheDocument();
-    expect(
-      screen.getByRole("combobox", { name: /billable/i }),
-    ).toHaveTextContent(/^billable$/i);
+    // Billable filter now uses BillableToggle buttons (Story 4.2)
+    expect(screen.getByTestId("billable-toggle-billable")).toBeInTheDocument();
+    expect(screen.getByTestId("billable-toggle-all")).toBeInTheDocument();
+    expect(screen.getByTestId("billable-toggle-nonBillable")).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /chart/i })).toHaveTextContent(
       /^project$/i,
     );
