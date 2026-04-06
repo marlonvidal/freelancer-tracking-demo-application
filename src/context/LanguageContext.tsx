@@ -109,6 +109,10 @@ export interface Translations {
   earningsDateRangeCustom: string;
   earningsPickDateRange: string;
   earningsChartAllHidden: string;
+  earningsEmptyNoTasks: string;
+  earningsEmptyNoPeriodData: string;
+  earningsNoBillableWork: string;
+  earningsCalculationError: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -200,6 +204,10 @@ export const translations: Record<Language, Translations> = {
     earningsDateRangeCustom: 'Custom range',
     earningsPickDateRange: 'Pick a date range',
     earningsChartAllHidden: 'No visible data — click a legend item to restore',
+    earningsEmptyNoTasks: 'No tasks tracked yet. Start tracking time to see earnings data.',
+    earningsEmptyNoPeriodData: 'No data for this period. Try adjusting the date range.',
+    earningsNoBillableWork: 'No billable work in this period.',
+    earningsCalculationError: 'Unable to calculate metrics. Try refreshing the page.',
   },
   pt: {
     totalRevenue: 'Receita Total',
@@ -289,6 +297,10 @@ export const translations: Record<Language, Translations> = {
     earningsDateRangeCustom: 'Intervalo personalizado',
     earningsPickDateRange: 'Escolha um intervalo de datas',
     earningsChartAllHidden: 'Nenhum dado visível — clique em um item da legenda para restaurar',
+    earningsEmptyNoTasks: 'Nenhuma tarefa rastreada ainda. Comece a rastrear o tempo para ver os dados de ganhos.',
+    earningsEmptyNoPeriodData: 'Sem dados para este período. Tente ajustar o intervalo de datas.',
+    earningsNoBillableWork: 'Nenhum trabalho faturável neste período.',
+    earningsCalculationError: 'Não foi possível calcular as métricas. Tente atualizar a página.',
   },
 };
 

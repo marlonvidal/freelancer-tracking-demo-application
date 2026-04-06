@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { LanguageProvider } from "@/context/LanguageContext";
 import EarningsDashboard from "./EarningsDashboard";
+import * as earningsCalc from "@/lib/earnings-calculations";
 
 function renderEarningsRoute() {
   return render(
@@ -112,24 +113,157 @@ describe("EarningsDashboard", () => {
     expect(screen.getByText("Total de Tarefas")).toBeInTheDocument();
   });
 
-  it("[P0] zero-state: empty task list renders all revenue cards as $0.00 (Story 2.2, AC4)", () => {
+  it("[P0] zero-state: empty task list shows empty-no-tasks message (Story 5.1, AC2 / FR46)", () => {
     localStorage.setItem(
       "freelancer-kanban-data",
       JSON.stringify({ tasks: [], columns: [], clients: [], version: 1 }),
     );
     renderEarningsRoute();
-    const zeroValues = screen.getAllByText("$0.00");
-    // Total Revenue, Billable Revenue, Non-Billable Revenue, Average Hourly Rate
-    expect(zeroValues.length).toBeGreaterThanOrEqual(4);
+    expect(screen.getByTestId("earnings-empty-no-tasks")).toBeInTheDocument();
+    expect(screen.queryByTestId("earnings-metrics")).not.toBeInTheDocument();
   });
 
-  it("[P1] zero-state: task count card shows '0 total / 0 billable' (Story 2.2, AC4)", () => {
+  it("[P1] zero-state: empty task list does not render metric cards (Story 5.1, AC2)", () => {
     localStorage.setItem(
       "freelancer-kanban-data",
       JSON.stringify({ tasks: [], columns: [], clients: [], version: 1 }),
     );
     renderEarningsRoute();
-    expect(screen.getByText(/0 total \/ 0 billable/)).toBeInTheDocument();
+    expect(screen.queryByTestId("earnings-metrics")).not.toBeInTheDocument();
+  });
+
+  it("[P0] calculation error shows earnings-calculation-error message (Story 5.1, AC5 / FR49)", () => {
+    const spy = vi
+      .spyOn(earningsCalc, "calculateSummaryMetrics")
+      .mockImplementation(() => {
+        throw new Error("simulated calculation failure");
+      });
+    renderEarningsRoute();
+    expect(screen.getByTestId("earnings-calculation-error")).toBeInTheDocument();
+    expect(screen.queryByTestId("earnings-metrics")).not.toBeInTheDocument();
+    spy.mockRestore();
+  });
+
+  it("[P1] tasks outside date range shows no-period-data message (Story 5.1, AC3 / FR47)", () => {
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({
+        tasks: [
+          {
+            id: "t1",
+            title: "Old Task",
+            columnId: "col-1",
+            clientId: null,
+            isBillable: true,
+            hourlyRate: 100,
+            timeSpent: 3600,
+            createdAt: Date.now() - 60 * 86400000,
+            priority: "medium",
+            description: "",
+            timeEstimate: null,
+            dueDate: null,
+            tags: [],
+            order: 0,
+          },
+        ],
+        columns: [{ id: "col-1", title: "In Progress", order: 0 }],
+        clients: [],
+        version: 1,
+      }),
+    );
+    renderEarningsRoute();
+    // Default preset is last30 — task is 60 days old, outside the range
+    expect(screen.getByTestId("earnings-empty-no-period-data")).toBeInTheDocument();
+    expect(screen.queryByTestId("earnings-metrics")).not.toBeInTheDocument();
+  });
+
+  it("[P1] billable filter with no billable tasks shows no-billable-work message (Story 5.1, AC4 / FR48)", () => {
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({
+        tasks: [
+          {
+            id: "t1",
+            title: "Non-billable Task",
+            columnId: "col-1",
+            clientId: null,
+            isBillable: false,
+            hourlyRate: null,
+            timeSpent: 3600,
+            createdAt: Date.now() - 5 * 86400000,
+            priority: "medium",
+            description: "",
+            timeEstimate: null,
+            dueDate: null,
+            tags: [],
+            order: 0,
+          },
+        ],
+        columns: [{ id: "col-1", title: "In Progress", order: 0 }],
+        clients: [],
+        version: 1,
+      }),
+    );
+    localStorage.setItem(
+      "earnings-dashboard-state",
+      JSON.stringify({
+        version: 1,
+        dateRangePreset: "last30",
+        billableFilter: "billable",
+        activeChart: "customer",
+      }),
+    );
+    renderEarningsRoute();
+    expect(screen.getByTestId("earnings-empty-no-billable-work")).toBeInTheDocument();
+    expect(screen.queryByTestId("earnings-metrics")).not.toBeInTheDocument();
+  });
+
+  it("[P1] zero-revenue task renders metric cards with $0.00 (Story 5.1, AC6 / FR50)", () => {
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({
+        tasks: [
+          {
+            id: "t1",
+            title: "Zero Task",
+            columnId: "col-1",
+            clientId: null,
+            isBillable: true,
+            hourlyRate: 0,
+            timeSpent: 0,
+            createdAt: Date.now() - 5 * 86400000,
+            priority: "low",
+            description: "",
+            timeEstimate: null,
+            dueDate: null,
+            tags: [],
+            order: 0,
+          },
+        ],
+        columns: [{ id: "col-1", title: "In Progress", order: 0 }],
+        clients: [],
+        version: 1,
+      }),
+    );
+    renderEarningsRoute();
+    // Task is in range and billable — shows metric cards, all values $0.00
+    expect(screen.getByTestId("earnings-metrics")).toBeInTheDocument();
+    expect(screen.getAllByText("$0.00").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("[P1] Portuguese: no tasks shows PT empty-no-tasks translation (Story 5.1, AC2 i18n)", () => {
+    localStorage.setItem("app-language", "pt");
+    localStorage.setItem(
+      "freelancer-kanban-data",
+      JSON.stringify({ tasks: [], columns: [], clients: [], version: 1 }),
+    );
+    renderEarningsRoute();
+    expect(screen.getByTestId("earnings-empty-no-tasks")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Nenhuma tarefa rastreada ainda. Comece a rastrear o tempo para ver os dados de ganhos.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("[P1] task count card reflects seeded task data (Story 2.2, AC1, FR25)", () => {

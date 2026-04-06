@@ -35,16 +35,21 @@ const EarningsDashboardContent: React.FC = () => {
   } = useEarningsDashboardState();
   const titleBeforeRouteRef = useRef<string | null>(null);
 
-  const metrics = useMemo(
-    () =>
-      calculateSummaryMetrics(
-        appState.tasks,
-        appState.clients,
-        resolveDateRangeMs(state, Date.now()),
-        state.billableFilter,
-      ),
-    [appState.tasks, appState.clients, state],
-  );
+  const { metrics, metricsError } = useMemo(() => {
+    try {
+      return {
+        metrics: calculateSummaryMetrics(
+          appState.tasks,
+          appState.clients,
+          resolveDateRangeMs(state, Date.now()),
+          state.billableFilter,
+        ),
+        metricsError: null,
+      };
+    } catch (err) {
+      return { metrics: null, metricsError: err as Error };
+    }
+  }, [appState.tasks, appState.clients, state]);
 
   const customerData = useMemo(
     () =>
@@ -108,63 +113,101 @@ const EarningsDashboardContent: React.FC = () => {
           </h1>
         </div>
 
-        <div
-          data-testid="earnings-metrics"
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
-        >
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {t.earningsTotalRevenue}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">{formatCurrency(metrics.totalRevenue)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {t.earningsBillableRevenue}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">{formatCurrency(metrics.billableRevenue)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {t.earningsNonBillableRevenue}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">{formatCurrency(metrics.nonBillableRevenue)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {t.earningsAvgHourlyRate}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">{formatCurrency(metrics.averageHourlyRate)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {t.earningsTaskCount}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">
-                {metrics.totalTaskCount} {t.earningsTaskCountTotal} / {metrics.billableTaskCount} {t.earningsTaskCountBillable}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        {metricsError ? (
+          <div
+            data-testid="earnings-calculation-error"
+            className="flex items-center justify-center rounded-lg border border-dashed p-8"
+          >
+            <p className="text-muted-foreground text-sm text-center">
+              {t.earningsCalculationError}
+            </p>
+          </div>
+        ) : appState.tasks.length === 0 ? (
+          <div
+            data-testid="earnings-empty-no-tasks"
+            className="flex items-center justify-center rounded-lg border border-dashed p-8"
+          >
+            <p className="text-muted-foreground text-sm text-center">
+              {t.earningsEmptyNoTasks}
+            </p>
+          </div>
+        ) : metrics && metrics.totalTaskCount === 0 && state.billableFilter === 'billable' ? (
+          <div
+            data-testid="earnings-empty-no-billable-work"
+            className="flex items-center justify-center rounded-lg border border-dashed p-8"
+          >
+            <p className="text-muted-foreground text-sm text-center">
+              {t.earningsNoBillableWork}
+            </p>
+          </div>
+        ) : metrics && metrics.totalTaskCount === 0 ? (
+          <div
+            data-testid="earnings-empty-no-period-data"
+            className="flex items-center justify-center rounded-lg border border-dashed p-8"
+          >
+            <p className="text-muted-foreground text-sm text-center">
+              {t.earningsEmptyNoPeriodData}
+            </p>
+          </div>
+        ) : metrics ? (
+          <div
+            data-testid="earnings-metrics"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
+          >
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {t.earningsTotalRevenue}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">{formatCurrency(metrics.totalRevenue)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {t.earningsBillableRevenue}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">{formatCurrency(metrics.billableRevenue)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {t.earningsNonBillableRevenue}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">{formatCurrency(metrics.nonBillableRevenue)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {t.earningsAvgHourlyRate}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">{formatCurrency(metrics.averageHourlyRate)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {t.earningsTaskCount}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">
+                  {metrics.totalTaskCount} {t.earningsTaskCountTotal} / {metrics.billableTaskCount} {t.earningsTaskCountBillable}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        ) : null}
 
         {state.activeChart === 'customer' && (
           <CustomerRevenueChart data={customerData} />

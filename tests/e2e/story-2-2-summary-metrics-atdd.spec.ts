@@ -39,22 +39,20 @@ test.describe("Story 2.2 ATDD — summary metrics on Earnings Dashboard", () => 
   );
 
   test(
-    "[P0] zero-state: with no tasks seeded all revenue cards show $0.00 and task count shows 0 total / 0 billable (AC4)",
+    "[P0] zero-state: with no tasks seeded shows empty-no-tasks message and hides metric cards (AC4, Story 5.1)",
     async ({ page }) => {
       await page.addInitScript(() => {
         const empty = { tasks: [], columns: [], clients: [], version: 1 };
+        localStorage.setItem("app-language", "en");
         localStorage.setItem("freelancer-kanban-data", JSON.stringify(empty));
       });
       await blockKnownThirdPartyHosts(page);
       await page.goto("/earnings");
 
-      await expect(page.getByTestId("earnings-metrics")).toBeVisible();
-
-      // At least one $0.00 value visible (revenue cards)
-      await expect(page.getByText("$0.00").first()).toBeVisible();
-
-      // Task count card shows the "X total / Y billable" format with zeros
-      await expect(page.getByText(/0 total \/ 0 billable/)).toBeVisible();
+      // Story 5.1 AC2 / FR46: empty task list shows the "no tasks" empty state
+      await expect(page.getByTestId("earnings-empty-no-tasks")).toBeVisible();
+      // Metric cards grid must NOT be rendered when no tasks exist
+      await expect(page.getByTestId("earnings-metrics")).not.toBeVisible();
     },
   );
 
