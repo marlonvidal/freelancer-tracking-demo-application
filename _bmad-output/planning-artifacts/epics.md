@@ -149,7 +149,7 @@ _No UX Design document provided. Visual design follows existing FreelanceFlow de
 | Epic 1: Dashboard Infrastructure | 1.1, 1.2, 1.3 | FR1-FR3, FR39-FR42 | Route setup, navigation integration, state persistence |
 | Epic 2: Earnings Calculations Engine | 2.1, 2.2 | FR21-FR27, NFR-P4 | Revenue logic, metric calculations, accuracy |
 | Epic 3: Chart Visualizations | 3.1, 3.2, 3.3, 3.4 | FR4-FR10, FR43-FR45, NFR-P1, NFR-P3 | Customer/Project/Tag charts, interactivity, responsiveness |
-| Epic 4: Filter & Control UI | 4.1, 4.2, 4.3 | FR11-FR20, FR40-FR41, NFR-P2 | Date picker, presets, billable toggle, filter persistence |
+| Epic 4: Filter & Control UI | 4.1, 4.2, 4.3, 4.4 | FR11-FR20, FR40-FR41, NFR-P2 | Date picker, presets, billable toggle, filter persistence, chart UX polish + test stability |
 | Epic 5: Metrics & Summary Display | 5.1 | FR21-FR25, FR46-FR50 | Summary cards, edge case handling, empty states |
 | Epic 6: Internationalization | 6.1 | FR28-FR32 | Translations, date formats, currency display |
 | Epic 7: Accessibility | 7.1 | FR33-FR38, NFR-A1-NFR-A7 | ARIA labels, keyboard nav, contrast, focus indicators |
@@ -550,6 +550,36 @@ So that **I can quickly refine my analysis without a mouse and without delays**.
 **Given** I am using a keyboard only
 **When** I interact with all filter controls
 **Then** I can complete all filtering tasks (NFR-A7)
+
+---
+
+### Story 4.4: Chart UX Polish & Test Stability
+
+As a **developer and user**,
+I want **chart legend state to reset correctly on filter changes, a shared currency formatter, empty-state handling for all-hidden charts, and reliable E2E timing tests**,
+So that **the chart visualizations behave predictably after filter interactions, the codebase has no duplicated formatting logic, and the test suite is stable across CI environments**.
+
+**Acceptance Criteria:**
+
+**Given** I have hidden one or more legend items in any chart  
+**When** I change the date range or billable filter  
+**Then** all hidden items become visible again (legend state resets)
+
+**Given** the three chart components each have a local `formatCurrency` function  
+**When** Story 4.4 is complete  
+**Then** a single shared `formatCurrency` exported from `src/lib/utils.ts` is used by all three charts
+
+**Given** I click all legend items to hide all chart slices  
+**When** `visibleData` becomes empty  
+**Then** an informative message is shown (e.g. "No visible data — click a legend item to restore") instead of a blank chart area
+
+**Given** Stories 1.1 and 3.2 have E2E timing tests that start `Date.now()` before `page.goto()`  
+**When** Story 4.4 is complete  
+**Then** the timer starts after navigation completes, and both tests pass consistently under parallel Playwright workers
+
+**Given** `App.tsx` uses mixed `./pages` and `@/pages` import paths  
+**When** Story 4.4 is complete  
+**Then** all imports in `App.tsx` use the `@/` alias consistently
 
 ---
 
