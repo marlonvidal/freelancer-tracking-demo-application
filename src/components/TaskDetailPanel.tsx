@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, DollarSign, Calendar, User, AlertCircle } from 'lucide-react';
+import { X, Clock, DollarSign, Calendar, User, AlertCircle, Tag } from 'lucide-react';
 import { Task, Priority } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -28,9 +28,11 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
   const { state, dispatch, getClient, getTaskRate } = useApp();
   const { t } = useLanguage();
   const [localTask, setLocalTask] = useState<Task | null>(null);
+  const [tagInput, setTagInput] = useState('');
 
   useEffect(() => {
     setLocalTask(task);
+    setTagInput('');
   }, [task]);
 
   if (!localTask) return null;
@@ -41,6 +43,22 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
       type: 'UPDATE_TASK',
       payload: { id: localTask.id, updates },
     });
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const tag = tagInput.trim().replace(/,$/, '');
+      if (tag && localTask && !localTask.tags.includes(tag)) {
+        handleUpdate({ tags: [...localTask.tags, tag] });
+      }
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    if (!localTask) return;
+    handleUpdate({ tags: localTask.tags.filter(t => t !== tag) });
   };
 
   const client = getClient(localTask.clientId);
@@ -177,6 +195,40 @@ const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, onClose }) => {
                     dueDate: e.target.value ? new Date(e.target.value).getTime() : null
                   })}
                   className="mt-1"
+                />
+              </div>
+
+              {/* Tags */}
+              <div>
+                <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Tag className="h-3 w-3" />
+                  {t.tags}
+                </Label>
+                {localTask.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
+                    {localTask.tags.map(tag => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(tag)}
+                          className="hover:text-destructive transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <Input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  placeholder={t.addTag}
+                  className="mt-1 h-8 text-sm"
                 />
               </div>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { Priority } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -43,6 +43,8 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
   const [hourlyRate, setHourlyRate] = useState<string>('');
   const [timeEstimate, setTimeEstimate] = useState<string>('');
   const [columnId, setColumnId] = useState<string>(defaultColumnId || state.columns[0]?.id || '');
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
 
   React.useEffect(() => {
     if (defaultColumnId) {
@@ -67,7 +69,7 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
         timeEstimate: timeEstimate ? parseFloat(timeEstimate) * 3600 : null,
         timeSpent: 0,
         dueDate: null,
-        tags: [],
+        tags,
       },
     });
 
@@ -79,7 +81,24 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
     setIsBillable(true);
     setHourlyRate('');
     setTimeEstimate('');
+    setTags([]);
+    setTagInput('');
     onOpenChange(false);
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const tag = tagInput.trim().replace(/,$/, '');
+      if (tag && !tags.includes(tag)) {
+        setTags(prev => [...prev, tag]);
+      }
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    setTags(prev => prev.filter(t => t !== tag));
   };
 
   const selectedClient = state.clients.find(c => c.id === clientId);
@@ -230,6 +249,37 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
               onChange={(e) => setTimeEstimate(e.target.value)}
               placeholder="e.g., 4"
               step="0.5"
+            />
+          </div>
+
+          {/* Tags */}
+          <div>
+            <Label>{t.tags}</Label>
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2 mt-1">
+                {tags.map(tag => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      className="hover:text-destructive transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <Input
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={handleTagKeyDown}
+              placeholder={t.addTag}
+              className="mt-1"
             />
           </div>
 

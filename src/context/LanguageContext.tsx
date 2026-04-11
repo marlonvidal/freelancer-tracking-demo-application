@@ -58,6 +58,10 @@ interface Translations {
   optional: string;
   createTask: string;
   
+  // Tags
+  tags: string;
+  addTag: string;
+
   // Settings
   language: string;
   english: string;
@@ -111,6 +115,8 @@ const translations: Record<Language, Translations> = {
     taskDescription: 'Task Description',
     optional: 'Optional',
     createTask: 'Create Task',
+    tags: 'Tags',
+    addTag: 'Add tag...',
     language: 'Language',
     english: 'English',
     portuguese: 'Portuguese',
@@ -161,6 +167,8 @@ const translations: Record<Language, Translations> = {
     taskDescription: 'Descrição da Tarefa',
     optional: 'Opcional',
     createTask: 'Criar Tarefa',
+    tags: 'Tags',
+    addTag: 'Adicionar tag...',
     language: 'Idioma',
     english: 'Inglês',
     portuguese: 'Português',

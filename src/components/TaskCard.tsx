@@ -139,6 +139,22 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
         </Badge>
       </div>
 
+      {/* Tags */}
+      {task.tags.length > 0 && (
+        <div className="flex items-center gap-1 flex-wrap mb-2">
+          {task.tags.slice(0, 2).map(tag => (
+            <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
+              {tag}
+            </Badge>
+          ))}
+          {task.tags.length > 2 && (
+            <span className="text-[10px] text-muted-foreground">
+              +{task.tags.length - 2}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Time & Revenue Section */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
